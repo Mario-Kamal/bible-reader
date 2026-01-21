@@ -67,7 +67,7 @@ export default function Leaderboard() {
                     <div className="flex items-center gap-4">
                       {/* Rank */}
                       <div className={cn("flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-primary bg-primary", index < 3 ? "bg-gradient-gold text-accent-foreground" : "bg-muted text-muted-foreground")}>
-                        {RankIcon ? <Zap className={cn("w-5 h-5 border-destructive-foreground bg-inherit text-accent", rankColors[index])} /> : index + 1}
+                        {RankIcon ? <Zap className={cn("w-5 h-5 bg-inherit text-accent border-accent", rankColors[index])} /> : index + 1}
                       </div>
 
                       {/* Avatar & Name */}
