@@ -6,7 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { PointsBadge } from '@/components/ui/PointsBadge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowRight, Check, BookOpen, Sparkles } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AIReader } from '@/components/reader/AIReader';
+import { ReadingEvaluator } from '@/components/reader/ReadingEvaluator';
+import { ArrowRight, Check, BookOpen, Sparkles, Volume2, Mic } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function TopicReader() {
@@ -17,9 +20,13 @@ export default function TopicReader() {
   const completeTopic = useCompleteTopic();
   
   const [showCompletion, setShowCompletion] = useState(false);
+  const [activeTab, setActiveTab] = useState<'read' | 'listen' | 'practice'>('read');
 
   const isCompleted = progress?.some(p => p.topic_id === topicId);
   const sortedVerses = topic?.verses?.sort((a, b) => a.order_index - b.order_index) || [];
+  
+  // Combine all verses text for reading practice
+  const fullText = sortedVerses.map(v => v.verse_text).join(' ');
 
   const handleComplete = async () => {
     if (!topic || isCompleted) return;
@@ -110,51 +117,163 @@ export default function TopicReader() {
           </div>
         </header>
 
-        {/* Content */}
-        <div className="px-4 py-6 max-w-2xl mx-auto space-y-6">
-          {/* Description */}
-          {topic.description && (
-            <p className="text-muted-foreground leading-relaxed">
-              {topic.description}
-            </p>
-          )}
+        {/* Tabs */}
+        <div className="px-4 py-4 max-w-2xl mx-auto">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="read" className="gap-1">
+                <BookOpen className="w-4 h-4" />
+                قراءة
+              </TabsTrigger>
+              <TabsTrigger value="listen" className="gap-1">
+                <Volume2 className="w-4 h-4" />
+                استماع
+              </TabsTrigger>
+              <TabsTrigger value="practice" className="gap-1">
+                <Mic className="w-4 h-4" />
+                تدريب
+              </TabsTrigger>
+            </TabsList>
 
-          {/* Verses */}
-          <div className="space-y-4">
-            {sortedVerses.map((verse, index) => (
-              <Card 
-                key={verse.id} 
-                className="p-5 animate-fade-in"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div className="flex items-start gap-3 mb-3">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary">
-                    {index + 1}
-                  </div>
-                  <div className="text-sm font-medium text-primary">
-                    {verse.book} {verse.chapter}:{verse.verse_start}
-                    {verse.verse_end && verse.verse_end !== verse.verse_start && `-${verse.verse_end}`}
-                  </div>
-                </div>
-                <p className="scripture-text pr-11">
-                  {verse.verse_text}
+            {/* Read Tab */}
+            <TabsContent value="read" className="space-y-6 mt-6">
+              {/* Description */}
+              {topic.description && (
+                <p className="text-muted-foreground leading-relaxed">
+                  {topic.description}
                 </p>
-              </Card>
-            ))}
-          </div>
+              )}
 
-          {/* Interpretation */}
-          {topic.interpretation && (
-            <Card className="card-gold p-5">
-              <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-accent" />
-                التفسير
-              </h3>
-              <p className="text-muted-foreground leading-relaxed">
-                {topic.interpretation}
-              </p>
-            </Card>
-          )}
+              {/* Verses */}
+              <div className="space-y-4">
+                {sortedVerses.map((verse, index) => (
+                  <Card 
+                    key={verse.id} 
+                    className="p-5 animate-fade-in"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary">
+                          {index + 1}
+                        </div>
+                        <div className="text-sm font-medium text-primary">
+                          {verse.book} {verse.chapter}:{verse.verse_start}
+                          {verse.verse_end && verse.verse_end !== verse.verse_start && `-${verse.verse_end}`}
+                        </div>
+                      </div>
+                      <AIReader text={verse.verse_text} />
+                    </div>
+                    <p className="scripture-text pr-11">
+                      {verse.verse_text}
+                    </p>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Interpretation */}
+              {topic.interpretation && (
+                <Card className="card-gold p-5">
+                  <h3 className="font-semibold mb-3 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-accent" />
+                    التفسير
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {topic.interpretation}
+                  </p>
+                </Card>
+              )}
+            </TabsContent>
+
+            {/* Listen Tab */}
+            <TabsContent value="listen" className="space-y-6 mt-6">
+              <Card className="p-6 text-center">
+                <Volume2 className="w-12 h-12 mx-auto text-primary mb-4" />
+                <h3 className="font-semibold mb-2">استمع للموضوع</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {topic.audio_url ? 'تسجيل من المعلم' : 'قراءة بالذكاء الاصطناعي'}
+                </p>
+                
+                {topic.audio_url ? (
+                  <audio src={topic.audio_url} controls className="w-full" />
+                ) : (
+                  <div className="space-y-4">
+                    <p className="text-xs text-muted-foreground">
+                      اضغط على أيقونة الصوت بجانب كل آية للاستماع
+                    </p>
+                    <AIReader text={fullText} />
+                    <p className="text-xs text-muted-foreground">
+                      استمع للموضوع كاملاً
+                    </p>
+                  </div>
+                )}
+              </Card>
+
+              {/* Individual verses for listening */}
+              <div className="space-y-3">
+                {sortedVerses.map((verse, index) => (
+                  <Card key={verse.id} className="p-4 flex items-center gap-3">
+                    <AIReader text={verse.verse_text} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-primary">
+                        {verse.book} {verse.chapter}:{verse.verse_start}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {verse.verse_text.slice(0, 50)}...
+                      </p>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+
+            {/* Practice Tab */}
+            <TabsContent value="practice" className="space-y-6 mt-6">
+              <Card className="p-6">
+                <div className="text-center mb-6">
+                  <Mic className="w-12 h-12 mx-auto text-primary mb-4" />
+                  <h3 className="font-semibold mb-2">تدرب على القراءة</h3>
+                  <p className="text-sm text-muted-foreground">
+                    اقرأ النص بصوتك وسيقيّم الذكاء الاصطناعي قراءتك
+                  </p>
+                </div>
+
+                <div className="p-4 bg-muted/50 rounded-lg mb-6">
+                  <p className="text-sm font-medium mb-2">النص المطلوب قراءته:</p>
+                  <p className="scripture-text text-sm leading-relaxed">
+                    {sortedVerses[0]?.verse_text || fullText.slice(0, 200)}
+                  </p>
+                </div>
+
+                <ReadingEvaluator 
+                  expectedText={sortedVerses[0]?.verse_text || fullText.slice(0, 200)}
+                />
+              </Card>
+
+              {/* Practice individual verses */}
+              {sortedVerses.length > 1 && (
+                <div className="space-y-4">
+                  <h4 className="font-semibold">تدرب على كل آية</h4>
+                  {sortedVerses.map((verse, index) => (
+                    <Card key={verse.id} className="p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
+                          {index + 1}
+                        </div>
+                        <span className="text-sm font-medium text-primary">
+                          {verse.book} {verse.chapter}:{verse.verse_start}
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                        {verse.verse_text}
+                      </p>
+                      <ReadingEvaluator expectedText={verse.verse_text} />
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
 
         {/* Complete Button */}

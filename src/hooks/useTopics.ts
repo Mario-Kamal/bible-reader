@@ -26,6 +26,7 @@ export interface Topic {
   scheduled_for: string | null;
   created_at: string;
   updated_at: string;
+  audio_url: string | null;
   verses?: Verse[];
 }
 
