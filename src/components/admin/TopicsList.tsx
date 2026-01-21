@@ -1,6 +1,5 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
 import { Pencil, Mic, BookOpen } from 'lucide-react';
 
 interface Topic {
@@ -54,7 +53,7 @@ export function TopicsList({ topics, onEdit, onTogglePublish }: TopicsListProps)
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-2 shrink-0">
               <Button
                 variant="ghost"
                 size="icon"
@@ -63,15 +62,17 @@ export function TopicsList({ topics, onEdit, onTogglePublish }: TopicsListProps)
               >
                 <Pencil className="w-4 h-4" />
               </Button>
-              <div className="flex items-center gap-2">
-                <span className={`text-xs ${topic.is_published ? 'text-success' : 'text-muted-foreground'}`}>
-                  {topic.is_published ? 'منشور' : 'مسودة'}
-                </span>
-                <Switch 
-                  checked={topic.is_published} 
-                  onCheckedChange={checked => onTogglePublish(topic.id, checked)} 
-                />
-              </div>
+              <button
+                onClick={() => onTogglePublish(topic.id, !topic.is_published)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  topic.is_published 
+                    ? 'bg-success/15 text-success hover:bg-success/25' 
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+              >
+                <span className={`w-2 h-2 rounded-full ${topic.is_published ? 'bg-success' : 'bg-muted-foreground/50'}`} />
+                {topic.is_published ? 'منشور' : 'مسودة'}
+              </button>
             </div>
           </div>
         ))}
