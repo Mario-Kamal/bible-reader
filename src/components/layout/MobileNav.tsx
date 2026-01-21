@@ -3,10 +3,10 @@ import { Home, BookOpen, Trophy, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { href: '/home', icon: Home, label: 'Home' },
-  { href: '/topics', icon: BookOpen, label: 'Topics' },
-  { href: '/leaderboard', icon: Trophy, label: 'Ranking' },
-  { href: '/profile', icon: User, label: 'Profile' },
+  { href: '/home', icon: Home, label: 'الرئيسية' },
+  { href: '/topics', icon: BookOpen, label: 'المواضيع' },
+  { href: '/leaderboard', icon: Trophy, label: 'الترتيب' },
+  { href: '/profile', icon: User, label: 'حسابي' },
 ];
 
 export function MobileNav() {

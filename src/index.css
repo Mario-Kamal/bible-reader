@@ -123,6 +123,10 @@
     @apply border-border;
   }
 
+  html[dir="rtl"] {
+    direction: rtl;
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }

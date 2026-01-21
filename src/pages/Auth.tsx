@@ -4,23 +4,23 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BookOpen, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
 const phoneSchema = z.string()
-  .min(10, 'Phone number must be at least 10 digits')
-  .max(15, 'Phone number too long')
-  .regex(/^[\d\s\-\+\(\)]+$/, 'Invalid phone number format');
+  .min(10, 'رقم الهاتف يجب أن يكون 10 أرقام على الأقل')
+  .max(15, 'رقم الهاتف طويل جداً')
+  .regex(/^[\d\s\-\+\(\)]+$/, 'رقم هاتف غير صحيح');
 
 const passwordSchema = z.string()
-  .min(6, 'Password must be at least 6 characters');
+  .min(6, 'كلمة المرور يجب أن تكون 6 أحرف على الأقل');
 
 const nameSchema = z.string()
-  .min(2, 'Name must be at least 2 characters')
-  .max(100, 'Name too long');
+  .min(2, 'الاسم يجب أن يكون حرفين على الأقل')
+  .max(100, 'الاسم طويل جداً');
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -54,9 +54,9 @@ export default function Auth() {
     setIsLoading(false);
 
     if (error) {
-      toast.error('Invalid phone number or password');
+      toast.error('رقم الهاتف أو كلمة المرور غير صحيحة');
     } else {
-      toast.success('Welcome back!');
+      toast.success('أهلاً بعودتك!');
       navigate('/home');
     }
   };
@@ -81,34 +81,34 @@ export default function Auth() {
 
     if (error) {
       if (error.message.includes('already registered')) {
-        toast.error('This phone number is already registered');
+        toast.error('رقم الهاتف مسجل مسبقاً');
       } else {
-        toast.error('Failed to create account. Please try again.');
+        toast.error('فشل في إنشاء الحساب. حاول مرة أخرى.');
       }
     } else {
-      toast.success('Account created! Welcome to Scripture Journey!');
+      toast.success('تم إنشاء الحساب! أهلاً بك في رحلة الكتاب المقدس!');
       navigate('/home');
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-hero flex flex-col items-center justify-center p-4" dir="rtl">
       <div className="w-full max-w-md animate-slide-up">
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-gold mb-4 shadow-gold">
             <BookOpen className="w-8 h-8 text-accent-foreground" />
           </div>
-          <h1 className="text-3xl font-bold text-primary-foreground">Scripture Journey</h1>
-          <p className="text-primary-foreground/70 mt-2">Read. Learn. Grow.</p>
+          <h1 className="text-3xl font-bold text-primary-foreground">رحلة الكتاب المقدس</h1>
+          <p className="text-primary-foreground/70 mt-2">اقرأ. تعلم. انمُ.</p>
         </div>
 
         <Card className="shadow-lg border-0">
           <Tabs defaultValue="login" className="w-full">
             <CardHeader className="pb-2">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                <TabsTrigger value="login">تسجيل الدخول</TabsTrigger>
+                <TabsTrigger value="signup">حساب جديد</TabsTrigger>
               </TabsList>
             </CardHeader>
             
@@ -116,22 +116,24 @@ export default function Auth() {
               <TabsContent value="login" className="mt-0">
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="login-phone">Phone Number</Label>
+                    <Label htmlFor="login-phone">رقم الهاتف</Label>
                     <Input
                       id="login-phone"
                       type="tel"
-                      placeholder="Enter your phone number"
+                      placeholder="أدخل رقم هاتفك"
                       value={loginPhone}
                       onChange={(e) => setLoginPhone(e.target.value)}
                       required
+                      dir="ltr"
+                      className="text-left"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="login-password">Password</Label>
+                    <Label htmlFor="login-password">كلمة المرور</Label>
                     <Input
                       id="login-password"
                       type="password"
-                      placeholder="Enter your password"
+                      placeholder="أدخل كلمة المرور"
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
                       required
@@ -140,11 +142,11 @@ export default function Auth() {
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? (
                       <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Signing in...
+                        <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                        جاري الدخول...
                       </>
                     ) : (
-                      'Sign In'
+                      'دخول'
                     )}
                   </Button>
                 </form>
@@ -153,33 +155,35 @@ export default function Auth() {
               <TabsContent value="signup" className="mt-0">
                 <form onSubmit={handleSignup} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signup-name">Full Name</Label>
+                    <Label htmlFor="signup-name">الاسم الكامل</Label>
                     <Input
                       id="signup-name"
                       type="text"
-                      placeholder="Enter your full name"
+                      placeholder="أدخل اسمك الكامل"
                       value={signupName}
                       onChange={(e) => setSignupName(e.target.value)}
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-phone">Phone Number</Label>
+                    <Label htmlFor="signup-phone">رقم الهاتف</Label>
                     <Input
                       id="signup-phone"
                       type="tel"
-                      placeholder="Enter your phone number"
+                      placeholder="أدخل رقم هاتفك"
                       value={signupPhone}
                       onChange={(e) => setSignupPhone(e.target.value)}
                       required
+                      dir="ltr"
+                      className="text-left"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password">Password</Label>
+                    <Label htmlFor="signup-password">كلمة المرور</Label>
                     <Input
                       id="signup-password"
                       type="password"
-                      placeholder="Create a password (min 6 characters)"
+                      placeholder="أنشئ كلمة مرور (6 أحرف على الأقل)"
                       value={signupPassword}
                       onChange={(e) => setSignupPassword(e.target.value)}
                       required
@@ -188,11 +192,11 @@ export default function Auth() {
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? (
                       <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Creating account...
+                        <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                        جاري الإنشاء...
                       </>
                     ) : (
-                      'Create Account'
+                      'إنشاء حساب'
                     )}
                   </Button>
                 </form>

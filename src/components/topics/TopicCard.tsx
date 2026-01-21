@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { BookOpen, Check, Lock, ChevronRight } from 'lucide-react';
+import { BookOpen, Check, Lock, ChevronLeft } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { PointsBadge } from '@/components/ui/PointsBadge';
 import { cn } from '@/lib/utils';
@@ -25,7 +25,7 @@ export function TopicCard({ topic, isCompleted, isLocked, index }: TopicCardProp
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-foreground/60 truncate">{topic.title}</h3>
-            <p className="text-sm text-muted-foreground">Complete previous topic to unlock</p>
+            <p className="text-sm text-muted-foreground">أكمل الموضوع السابق للفتح</p>
           </div>
         </div>
       </Card>
@@ -56,11 +56,11 @@ export function TopicCard({ topic, isCompleted, isLocked, index }: TopicCardProp
             <div className="flex items-center gap-2 mb-1">
               <h3 className="font-semibold text-foreground truncate">{topic.title}</h3>
               {isCompleted && (
-                <span className="text-xs text-success font-medium">Completed</span>
+                <span className="text-xs text-success font-medium">مكتمل</span>
               )}
             </div>
             <p className="text-sm text-muted-foreground">
-              {verseCount} verse{verseCount !== 1 ? 's' : ''} from multiple books
+              {verseCount} آية من أسفار متعددة
             </p>
           </div>
           
@@ -68,7 +68,7 @@ export function TopicCard({ topic, isCompleted, isLocked, index }: TopicCardProp
             {!isCompleted && (
               <PointsBadge points={topic.points_reward} size="sm" />
             )}
-            <ChevronRight className="w-5 h-5 text-muted-foreground" />
+            <ChevronLeft className="w-5 h-5 text-muted-foreground" />
           </div>
         </div>
       </Card>

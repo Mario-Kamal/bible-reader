@@ -32,16 +32,16 @@ export default function Topics() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen">
+      <div className="min-h-screen" dir="rtl">
         {/* Header */}
         <header className="bg-gradient-hero text-primary-foreground px-4 pt-8 pb-6">
           <div className="max-w-lg mx-auto">
             <div className="flex items-center gap-3 mb-2">
               <BookOpen className="w-6 h-6" />
-              <h1 className="text-2xl font-bold">All Topics</h1>
+              <h1 className="text-2xl font-bold">جميع المواضيع</h1>
             </div>
             <p className="text-primary-foreground/70">
-              {publishedTopics.length} topics • {completedTopicIds.size} completed
+              {publishedTopics.length} موضوع • {completedTopicIds.size} مكتمل
             </p>
           </div>
         </header>
@@ -57,9 +57,9 @@ export default function Topics() {
           ) : publishedTopics.length === 0 ? (
             <div className="text-center py-12">
               <BookOpen className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No Topics Yet</h3>
+              <h3 className="text-lg font-semibold mb-2">لا توجد مواضيع بعد</h3>
               <p className="text-muted-foreground">
-                Check back soon for new reading content!
+                عُد قريباً لمحتوى جديد!
               </p>
             </div>
           ) : (
