@@ -10,17 +10,32 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ArrowLeft, Plus, Users, BookOpen, BarChart3, Trash2, Edit } from 'lucide-react';
+import { ArrowRight, Sparkles, Users, BookOpen, BarChart3, Loader2, Check, X, Eye } from 'lucide-react';
 import { toast } from 'sonner';
+
+interface GeneratedTopic {
+  title: string;
+  description: string;
+  interpretation: string;
+  verses: {
+    book: string;
+    chapter: number;
+    verse_start: number;
+    verse_end: number | null;
+    verse_text: string;
+  }[];
+}
 
 export default function Admin() {
   const { isAdmin } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [isAddingTopic, setIsAddingTopic] = useState(false);
-  const [newTopic, setNewTopic] = useState({ title: '', description: '', interpretation: '', points_reward: 10 });
+  
+  const [searchTopic, setSearchTopic] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedTopic, setGeneratedTopic] = useState<GeneratedTopic | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   // Fetch all topics for admin
   const { data: topics } = useQuery({
@@ -42,22 +57,92 @@ export default function Admin() {
     },
   });
 
-  const createTopic = useMutation({
+  const generateTopic = async () => {
+    if (!searchTopic.trim()) {
+      toast.error('اكتب موضوع للبحث');
+      return;
+    }
+    
+    setIsGenerating(true);
+    setGeneratedTopic(null);
+    
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-topic`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ topicTitle: searchTopic }),
+        }
+      );
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'فشل في التوليد');
+      }
+      
+      const data = await response.json();
+      setGeneratedTopic(data);
+      setShowPreview(true);
+      toast.success('تم توليد الموضوع بنجاح!');
+    } catch (error) {
+      console.error('Generation error:', error);
+      toast.error(error instanceof Error ? error.message : 'حدث خطأ');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const saveTopic = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from('topics').insert({
-        title: newTopic.title,
-        description: newTopic.description,
-        interpretation: newTopic.interpretation,
-        points_reward: newTopic.points_reward,
-        order_index: (topics?.length || 0) + 1,
-      });
-      if (error) throw error;
+      if (!generatedTopic) return;
+      
+      // Create topic
+      const { data: topic, error: topicError } = await supabase
+        .from('topics')
+        .insert({
+          title: generatedTopic.title,
+          description: generatedTopic.description,
+          interpretation: generatedTopic.interpretation,
+          points_reward: 10,
+          order_index: (topics?.length || 0) + 1,
+          is_published: false,
+        })
+        .select()
+        .single();
+      
+      if (topicError) throw topicError;
+      
+      // Create verses
+      const versesToInsert = generatedTopic.verses.map((v, idx) => ({
+        topic_id: topic.id,
+        book: v.book,
+        chapter: v.chapter,
+        verse_start: v.verse_start,
+        verse_end: v.verse_end,
+        verse_text: v.verse_text,
+        order_index: idx,
+      }));
+      
+      const { error: versesError } = await supabase
+        .from('verses')
+        .insert(versesToInsert);
+      
+      if (versesError) throw versesError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-topics'] });
-      setIsAddingTopic(false);
-      setNewTopic({ title: '', description: '', interpretation: '', points_reward: 10 });
-      toast.success('Topic created!');
+      setGeneratedTopic(null);
+      setShowPreview(false);
+      setSearchTopic('');
+      toast.success('تم حفظ الموضوع!');
+    },
+    onError: (error) => {
+      toast.error('فشل في الحفظ');
+      console.error(error);
     },
   });
 
@@ -68,17 +153,17 @@ export default function Admin() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-topics'] });
-      toast.success('Topic updated!');
+      toast.success('تم التحديث!');
     },
   });
 
   if (!isAdmin) {
     return (
       <AppLayout hideNav>
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center" dir="rtl">
           <div className="text-center">
-            <h2 className="text-xl font-semibold mb-4">Access Denied</h2>
-            <Button onClick={() => navigate('/home')}>Go Home</Button>
+            <h2 className="text-xl font-semibold mb-4">غير مصرح</h2>
+            <Button onClick={() => navigate('/home')}>العودة للرئيسية</Button>
           </div>
         </div>
       </AppLayout>
@@ -87,92 +172,165 @@ export default function Admin() {
 
   return (
     <AppLayout hideNav>
-      <div className="min-h-screen pb-8">
+      <div className="min-h-screen pb-8" dir="rtl">
         <header className="bg-gradient-hero text-primary-foreground px-4 pt-8 pb-6">
           <div className="max-w-4xl mx-auto flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate('/home')} className="text-primary-foreground">
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowRight className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-              <p className="text-primary-foreground/70">Manage content & users</p>
+              <h1 className="text-2xl font-bold">لوحة التحكم</h1>
+              <p className="text-primary-foreground/70">إدارة المحتوى والمستخدمين</p>
             </div>
           </div>
         </header>
 
-        <div className="px-4 py-6 max-w-4xl mx-auto">
+        <div className="px-4 py-6 max-w-4xl mx-auto space-y-6">
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-3 gap-4">
             <Card className="p-4 text-center">
               <Users className="w-6 h-6 mx-auto mb-2 text-primary" />
               <div className="text-2xl font-bold">{userStats?.totalUsers || 0}</div>
-              <div className="text-xs text-muted-foreground">Total Users</div>
+              <div className="text-xs text-muted-foreground">إجمالي المستخدمين</div>
             </Card>
             <Card className="p-4 text-center">
               <BarChart3 className="w-6 h-6 mx-auto mb-2 text-success" />
               <div className="text-2xl font-bold">{userStats?.activeUsers || 0}</div>
-              <div className="text-xs text-muted-foreground">Active Readers</div>
+              <div className="text-xs text-muted-foreground">قراء نشطين</div>
             </Card>
             <Card className="p-4 text-center">
               <BookOpen className="w-6 h-6 mx-auto mb-2 text-accent" />
               <div className="text-2xl font-bold">{topics?.length || 0}</div>
-              <div className="text-xs text-muted-foreground">Topics</div>
+              <div className="text-xs text-muted-foreground">المواضيع</div>
             </Card>
           </div>
 
-          {/* Topics Management */}
-          <Card className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold">Topics</h2>
-              <Dialog open={isAddingTopic} onOpenChange={setIsAddingTopic}>
-                <DialogTrigger asChild>
-                  <Button size="sm"><Plus className="w-4 h-4 mr-1" /> Add Topic</Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Create New Topic</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4 pt-4">
-                    <div>
-                      <Label>Title</Label>
-                      <Input value={newTopic.title} onChange={e => setNewTopic({ ...newTopic, title: e.target.value })} placeholder="e.g., Baptism" />
-                    </div>
-                    <div>
-                      <Label>Description</Label>
-                      <Textarea value={newTopic.description} onChange={e => setNewTopic({ ...newTopic, description: e.target.value })} placeholder="Brief description..." />
-                    </div>
-                    <div>
-                      <Label>Interpretation</Label>
-                      <Textarea value={newTopic.interpretation} onChange={e => setNewTopic({ ...newTopic, interpretation: e.target.value })} placeholder="Your interpretation..." />
-                    </div>
-                    <div>
-                      <Label>Points Reward</Label>
-                      <Input type="number" value={newTopic.points_reward} onChange={e => setNewTopic({ ...newTopic, points_reward: Number(e.target.value) })} />
-                    </div>
-                    <Button onClick={() => createTopic.mutate()} disabled={!newTopic.title || createTopic.isPending} className="w-full">
-                      Create Topic
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+          {/* AI Topic Generator */}
+          <Card className="card-gold p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Sparkles className="w-5 h-5 text-accent" />
+              <h2 className="font-semibold text-lg">توليد موضوع بالذكاء الاصطناعي</h2>
             </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              اكتب اسم الموضوع وسيقوم الذكاء الاصطناعي بالبحث في الأناجيل وتجميع الآيات
+            </p>
+            <div className="flex gap-3">
+              <Input
+                placeholder="مثال: معمودية يسوع، التطويبات، معجزة الخمس خبزات..."
+                value={searchTopic}
+                onChange={(e) => setSearchTopic(e.target.value)}
+                className="flex-1"
+                onKeyDown={(e) => e.key === 'Enter' && generateTopic()}
+              />
+              <Button onClick={generateTopic} disabled={isGenerating}>
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                    جاري التوليد...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 ml-2" />
+                    توليد
+                  </>
+                )}
+              </Button>
+            </div>
+          </Card>
 
+          {/* Generated Topic Preview */}
+          {showPreview && generatedTopic && (
+            <Card className="p-6 border-2 border-accent/50 animate-fade-in">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-lg flex items-center gap-2">
+                  <Eye className="w-5 h-5 text-primary" />
+                  معاينة الموضوع المولد
+                </h3>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setShowPreview(false);
+                      setGeneratedTopic(null);
+                    }}
+                  >
+                    <X className="w-4 h-4 ml-1" />
+                    إلغاء
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => saveTopic.mutate()}
+                    disabled={saveTopic.isPending}
+                  >
+                    {saveTopic.isPending ? (
+                      <Loader2 className="w-4 h-4 ml-1 animate-spin" />
+                    ) : (
+                      <Check className="w-4 h-4 ml-1" />
+                    )}
+                    حفظ الموضوع
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-xl font-bold text-primary">{generatedTopic.title}</h4>
+                  <p className="text-muted-foreground mt-1">{generatedTopic.description}</p>
+                </div>
+                
+                <div className="space-y-3">
+                  <h5 className="font-semibold">الآيات ({generatedTopic.verses.length})</h5>
+                  {generatedTopic.verses.map((verse, idx) => (
+                    <div key={idx} className="p-4 bg-muted/50 rounded-lg">
+                      <div className="text-sm font-medium text-primary mb-2">
+                        {verse.book} {verse.chapter}:{verse.verse_start}
+                        {verse.verse_end && verse.verse_end !== verse.verse_start && `-${verse.verse_end}`}
+                      </div>
+                      <p className="scripture-text">{verse.verse_text}</p>
+                    </div>
+                  ))}
+                </div>
+                
+                {generatedTopic.interpretation && (
+                  <div className="p-4 bg-accent/10 rounded-lg">
+                    <h5 className="font-semibold mb-2 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-accent" />
+                      التفسير
+                    </h5>
+                    <p className="text-muted-foreground leading-relaxed">{generatedTopic.interpretation}</p>
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
+
+          {/* Topics List */}
+          <Card className="p-4">
+            <h2 className="font-semibold mb-4">المواضيع المحفوظة</h2>
             <div className="space-y-2">
               {topics?.map(topic => (
                 <div key={topic.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                   <div>
                     <p className="font-medium">{topic.title}</p>
-                    <p className="text-xs text-muted-foreground">{topic.verses?.length || 0} verses • {topic.points_reward} pts</p>
+                    <p className="text-xs text-muted-foreground">
+                      {topic.verses?.length || 0} آية • {topic.points_reward} نقطة
+                    </p>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs">{topic.is_published ? 'Published' : 'Draft'}</span>
-                      <Switch checked={topic.is_published} onCheckedChange={checked => togglePublish.mutate({ id: topic.id, published: checked })} />
+                      <span className="text-xs">{topic.is_published ? 'منشور' : 'مسودة'}</span>
+                      <Switch 
+                        checked={topic.is_published} 
+                        onCheckedChange={checked => togglePublish.mutate({ id: topic.id, published: checked })} 
+                      />
                     </div>
                   </div>
                 </div>
               ))}
-              {!topics?.length && <p className="text-center text-muted-foreground py-4">No topics yet</p>}
+              {!topics?.length && (
+                <p className="text-center text-muted-foreground py-4">لا توجد مواضيع بعد</p>
+              )}
             </div>
           </Card>
         </div>

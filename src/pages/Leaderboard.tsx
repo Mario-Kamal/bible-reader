@@ -4,7 +4,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PointsBadge } from '@/components/ui/PointsBadge';
-import { Trophy, Medal, Crown, User } from 'lucide-react';
+import { Trophy, Medal, Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const rankIcons = [Crown, Medal, Medal];
@@ -18,16 +18,16 @@ export default function Leaderboard() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen">
+      <div className="min-h-screen" dir="rtl">
         {/* Header */}
         <header className="bg-gradient-hero text-primary-foreground px-4 pt-8 pb-6">
           <div className="max-w-lg mx-auto">
             <div className="flex items-center gap-3 mb-2">
               <Trophy className="w-6 h-6" />
-              <h1 className="text-2xl font-bold">Leaderboard</h1>
+              <h1 className="text-2xl font-bold">الترتيب</h1>
             </div>
             <p className="text-primary-foreground/70">
-              Top readers this season
+              أفضل القراء هذا الموسم
             </p>
           </div>
         </header>
@@ -41,8 +41,8 @@ export default function Leaderboard() {
                   #{userRank + 1}
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">Your Position</p>
-                  <p className="font-semibold">Keep reading to climb up!</p>
+                  <p className="text-sm text-muted-foreground">ترتيبك</p>
+                  <p className="font-semibold">استمر في القراءة للصعود!</p>
                 </div>
               </div>
             </Card>
@@ -60,9 +60,9 @@ export default function Leaderboard() {
           ) : !leaderboard?.length ? (
             <div className="text-center py-12">
               <Trophy className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No Rankings Yet</h3>
+              <h3 className="text-lg font-semibold mb-2">لا يوجد ترتيب بعد</h3>
               <p className="text-muted-foreground">
-                Start reading to appear on the leaderboard!
+                ابدأ القراءة لتظهر في الترتيب!
               </p>
             </div>
           ) : (
@@ -107,12 +107,12 @@ export default function Leaderboard() {
                           </span>
                           {isCurrentUser && (
                             <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                              You
+                              أنت
                             </span>
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          {player.topics_completed} topics completed
+                          {player.topics_completed} موضوع مكتمل
                         </p>
                       </div>
 

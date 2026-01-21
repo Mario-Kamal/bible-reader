@@ -15,6 +15,7 @@ import {
   Settings
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { ar } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 
 export default function Profile() {
@@ -36,19 +37,19 @@ export default function Profile() {
   const stats = [
     {
       icon: BookOpen,
-      label: 'Topics Read',
+      label: 'مواضيع مقروءة',
       value: completedCount,
       color: 'text-primary',
     },
     {
       icon: Trophy,
-      label: 'Total Points',
+      label: 'إجمالي النقاط',
       value: profile?.total_points || 0,
       color: 'text-accent',
     },
     {
       icon: Target,
-      label: 'Progress',
+      label: 'التقدم',
       value: `${progressPercent}%`,
       color: 'text-success',
     },
@@ -56,18 +57,18 @@ export default function Profile() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen">
+      <div className="min-h-screen" dir="rtl">
         {/* Header */}
         <header className="bg-gradient-hero text-primary-foreground px-4 pt-8 pb-16">
           <div className="max-w-lg mx-auto text-center">
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary-foreground/10 mb-4">
               <User className="w-10 h-10" />
             </div>
-            <h1 className="text-2xl font-bold mb-1">{profile?.full_name || 'Reader'}</h1>
+            <h1 className="text-2xl font-bold mb-1">{profile?.full_name || 'قارئ'}</h1>
             <p className="text-primary-foreground/70">{profile?.phone}</p>
             {isAdmin && (
               <span className="inline-block mt-2 text-xs bg-accent/20 text-accent px-3 py-1 rounded-full font-medium">
-                Admin
+                مدير
               </span>
             )}
           </div>
@@ -77,7 +78,7 @@ export default function Profile() {
         <div className="px-4 -mt-10 max-w-lg mx-auto">
           <Card className="p-6 shadow-lg">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold">Your Progress</h2>
+              <h2 className="font-semibold">تقدمك</h2>
               <PointsBadge points={profile?.total_points || 0} />
             </div>
             
@@ -90,16 +91,16 @@ export default function Profile() {
               
               <div className="flex-1 space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Completed</span>
-                  <span className="font-medium">{completedCount} topics</span>
+                  <span className="text-muted-foreground">مكتمل</span>
+                  <span className="font-medium">{completedCount} موضوع</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Remaining</span>
-                  <span className="font-medium">{totalTopics - completedCount} topics</span>
+                  <span className="text-muted-foreground">متبقي</span>
+                  <span className="font-medium">{totalTopics - completedCount} موضوع</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Total Available</span>
-                  <span className="font-medium">{totalTopics} topics</span>
+                  <span className="text-muted-foreground">الإجمالي</span>
+                  <span className="font-medium">{totalTopics} موضوع</span>
                 </div>
               </div>
             </div>
@@ -125,11 +126,11 @@ export default function Profile() {
             <div className="flex items-center gap-3">
               <Calendar className="w-5 h-5 text-muted-foreground" />
               <div>
-                <p className="text-sm text-muted-foreground">Member Since</p>
+                <p className="text-sm text-muted-foreground">عضو منذ</p>
                 <p className="font-medium">
                   {profile?.created_at 
-                    ? format(new Date(profile.created_at), 'MMMM d, yyyy')
-                    : 'Unknown'}
+                    ? format(new Date(profile.created_at), 'd MMMM yyyy', { locale: ar })
+                    : 'غير معروف'}
                 </p>
               </div>
             </div>
@@ -144,8 +145,8 @@ export default function Profile() {
               className="w-full" 
               onClick={() => navigate('/admin')}
             >
-              <Settings className="w-4 h-4 mr-2" />
-              Admin Dashboard
+              <Settings className="w-4 h-4 ml-2" />
+              لوحة التحكم
             </Button>
           )}
           
@@ -154,8 +155,8 @@ export default function Profile() {
             className="w-full text-destructive hover:text-destructive" 
             onClick={handleSignOut}
           >
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
+            <LogOut className="w-4 h-4 ml-2" />
+            تسجيل الخروج
           </Button>
         </div>
       </div>
