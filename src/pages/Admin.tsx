@@ -6,12 +6,11 @@ import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ArrowRight, Sparkles, Users, BookOpen, BarChart3, Loader2, Check, X, Eye } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { TopicForm } from '@/components/admin/TopicForm';
+import { ArrowRight, Sparkles, Users, BookOpen, BarChart3, Loader2, Check, X, Eye, Plus, Pencil, Mic } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface GeneratedTopic {
@@ -36,6 +35,8 @@ export default function Admin() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedTopic, setGeneratedTopic] = useState<GeneratedTopic | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [showManualForm, setShowManualForm] = useState(false);
+  const [editingTopic, setEditingTopic] = useState<string | null>(null);
 
   // Fetch all topics for admin
   const { data: topics } = useQuery({
@@ -97,19 +98,36 @@ export default function Admin() {
   };
 
   const saveTopic = useMutation({
-    mutationFn: async () => {
-      if (!generatedTopic) return;
+    mutationFn: async (topicData?: {
+      title: string;
+      description: string;
+      interpretation: string;
+      points_reward: number;
+      verses: { book: string; chapter: number; verse_start: number; verse_end: number | null; verse_text: string }[];
+      audio_url?: string | null;
+    }) => {
+      const data = topicData || (generatedTopic ? {
+        title: generatedTopic.title,
+        description: generatedTopic.description,
+        interpretation: generatedTopic.interpretation,
+        points_reward: 10,
+        verses: generatedTopic.verses,
+        audio_url: null,
+      } : null);
+      
+      if (!data) return;
       
       // Create topic
       const { data: topic, error: topicError } = await supabase
         .from('topics')
         .insert({
-          title: generatedTopic.title,
-          description: generatedTopic.description,
-          interpretation: generatedTopic.interpretation,
-          points_reward: 10,
+          title: data.title,
+          description: data.description,
+          interpretation: data.interpretation,
+          points_reward: data.points_reward,
           order_index: (topics?.length || 0) + 1,
           is_published: false,
+          audio_url: data.audio_url,
         })
         .select()
         .single();
@@ -117,31 +135,97 @@ export default function Admin() {
       if (topicError) throw topicError;
       
       // Create verses
-      const versesToInsert = generatedTopic.verses.map((v, idx) => ({
-        topic_id: topic.id,
-        book: v.book,
-        chapter: v.chapter,
-        verse_start: v.verse_start,
-        verse_end: v.verse_end,
-        verse_text: v.verse_text,
-        order_index: idx,
-      }));
-      
-      const { error: versesError } = await supabase
-        .from('verses')
-        .insert(versesToInsert);
-      
-      if (versesError) throw versesError;
+      if (data.verses.length > 0) {
+        const versesToInsert = data.verses.map((v, idx) => ({
+          topic_id: topic.id,
+          book: v.book,
+          chapter: v.chapter,
+          verse_start: v.verse_start,
+          verse_end: v.verse_end,
+          verse_text: v.verse_text,
+          order_index: idx,
+        }));
+        
+        const { error: versesError } = await supabase
+          .from('verses')
+          .insert(versesToInsert);
+        
+        if (versesError) throw versesError;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-topics'] });
       setGeneratedTopic(null);
       setShowPreview(false);
+      setShowManualForm(false);
       setSearchTopic('');
       toast.success('تم حفظ الموضوع!');
     },
     onError: (error) => {
       toast.error('فشل في الحفظ');
+      console.error(error);
+    },
+  });
+
+  const updateTopic = useMutation({
+    mutationFn: async ({ 
+      topicId, 
+      data 
+    }: { 
+      topicId: string; 
+      data: {
+        title: string;
+        description: string;
+        interpretation: string;
+        points_reward: number;
+        verses: { book: string; chapter: number; verse_start: number; verse_end: number | null; verse_text: string }[];
+        audio_url?: string | null;
+      };
+    }) => {
+      // Update topic
+      const { error: topicError } = await supabase
+        .from('topics')
+        .update({
+          title: data.title,
+          description: data.description,
+          interpretation: data.interpretation,
+          points_reward: data.points_reward,
+          audio_url: data.audio_url,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', topicId);
+      
+      if (topicError) throw topicError;
+      
+      // Delete existing verses
+      await supabase.from('verses').delete().eq('topic_id', topicId);
+      
+      // Insert new verses
+      if (data.verses.length > 0) {
+        const versesToInsert = data.verses.map((v, idx) => ({
+          topic_id: topicId,
+          book: v.book,
+          chapter: v.chapter,
+          verse_start: v.verse_start,
+          verse_end: v.verse_end,
+          verse_text: v.verse_text,
+          order_index: idx,
+        }));
+        
+        const { error: versesError } = await supabase
+          .from('verses')
+          .insert(versesToInsert);
+        
+        if (versesError) throw versesError;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-topics'] });
+      setEditingTopic(null);
+      toast.success('تم تحديث الموضوع!');
+    },
+    onError: (error) => {
+      toast.error('فشل في التحديث');
       console.error(error);
     },
   });
@@ -156,6 +240,8 @@ export default function Admin() {
       toast.success('تم التحديث!');
     },
   });
+
+  const editingTopicData = editingTopic ? topics?.find(t => t.id === editingTopic) : null;
 
   if (!isAdmin) {
     return (
@@ -205,38 +291,47 @@ export default function Admin() {
             </Card>
           </div>
 
-          {/* AI Topic Generator */}
-          <Card className="card-gold p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="w-5 h-5 text-accent" />
-              <h2 className="font-semibold text-lg">توليد موضوع بالذكاء الاصطناعي</h2>
-            </div>
-            <p className="text-sm text-muted-foreground mb-4">
-              اكتب اسم الموضوع وسيقوم الذكاء الاصطناعي بالبحث في الأناجيل وتجميع الآيات
-            </p>
-            <div className="flex gap-3">
-              <Input
-                placeholder="مثال: معمودية يسوع، التطويبات، معجزة الخمس خبزات..."
-                value={searchTopic}
-                onChange={(e) => setSearchTopic(e.target.value)}
-                className="flex-1"
-                onKeyDown={(e) => e.key === 'Enter' && generateTopic()}
-              />
-              <Button onClick={generateTopic} disabled={isGenerating}>
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="w-4 h-4 ml-2 animate-spin" />
-                    جاري التوليد...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 ml-2" />
-                    توليد
-                  </>
-                )}
-              </Button>
-            </div>
-          </Card>
+          {/* Add Topic Options */}
+          <div className="grid grid-cols-2 gap-4">
+            <Card 
+              className="card-gold p-6 cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => setShowManualForm(true)}
+            >
+              <div className="flex flex-col items-center text-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Plus className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="font-semibold">إضافة يدوية</h3>
+                <p className="text-xs text-muted-foreground">أضف موضوع وآيات يدوياً</p>
+              </div>
+            </Card>
+            
+            <Card className="card-gold p-6">
+              <div className="flex flex-col items-center text-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center">
+                  <Sparkles className="w-6 h-6 text-accent" />
+                </div>
+                <h3 className="font-semibold">توليد بالذكاء الاصطناعي</h3>
+                <p className="text-xs text-muted-foreground mb-2">اكتب الموضوع والـ AI يجيب الآيات</p>
+                <div className="flex gap-2 w-full">
+                  <Input
+                    placeholder="معمودية يسوع..."
+                    value={searchTopic}
+                    onChange={(e) => setSearchTopic(e.target.value)}
+                    className="flex-1 text-sm"
+                    onKeyDown={(e) => e.key === 'Enter' && generateTopic()}
+                  />
+                  <Button size="sm" onClick={generateTopic} disabled={isGenerating}>
+                    {isGenerating ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </div>
 
           {/* Generated Topic Preview */}
           {showPreview && generatedTopic && (
@@ -260,7 +355,7 @@ export default function Admin() {
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => saveTopic.mutate()}
+                    onClick={() => saveTopic.mutate(undefined)}
                     disabled={saveTopic.isPending}
                   >
                     {saveTopic.isPending ? (
@@ -311,13 +406,25 @@ export default function Admin() {
             <div className="space-y-2">
               {topics?.map(topic => (
                 <div key={topic.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <div>
-                    <p className="font-medium">{topic.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {topic.verses?.length || 0} آية • {topic.points_reward} نقطة
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <div>
+                      <p className="font-medium flex items-center gap-2">
+                        {topic.title}
+                        {topic.audio_url && <Mic className="w-3 h-3 text-primary" />}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {topic.verses?.length || 0} آية • {topic.points_reward} نقطة
+                      </p>
+                    </div>
                   </div>
                   <div className="flex items-center gap-3">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setEditingTopic(topic.id)}
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
                     <div className="flex items-center gap-2">
                       <span className="text-xs">{topic.is_published ? 'منشور' : 'مسودة'}</span>
                       <Switch 
@@ -334,6 +441,51 @@ export default function Admin() {
             </div>
           </Card>
         </div>
+
+        {/* Manual Form Dialog */}
+        <Dialog open={showManualForm} onOpenChange={setShowManualForm}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
+            <DialogHeader>
+              <DialogTitle>إضافة موضوع جديد</DialogTitle>
+            </DialogHeader>
+            <TopicForm
+              onSave={(data) => saveTopic.mutate(data)}
+              onCancel={() => setShowManualForm(false)}
+              isSaving={saveTopic.isPending}
+            />
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Form Dialog */}
+        <Dialog open={!!editingTopic} onOpenChange={(open) => !open && setEditingTopic(null)}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
+            <DialogHeader>
+              <DialogTitle>تعديل الموضوع</DialogTitle>
+            </DialogHeader>
+            {editingTopicData && (
+              <TopicForm
+                initialData={{
+                  id: editingTopicData.id,
+                  title: editingTopicData.title,
+                  description: editingTopicData.description ?? '',
+                  interpretation: editingTopicData.interpretation || '',
+                  points_reward: editingTopicData.points_reward,
+                  verses: editingTopicData.verses?.map(v => ({
+                    book: v.book,
+                    chapter: v.chapter,
+                    verse_start: v.verse_start,
+                    verse_end: v.verse_end,
+                    verse_text: v.verse_text,
+                  })) || [],
+                  audio_url: editingTopicData.audio_url,
+                }}
+                onSave={(data) => updateTopic.mutate({ topicId: editingTopic!, data })}
+                onCancel={() => setEditingTopic(null)}
+                isSaving={updateTopic.isPending}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </AppLayout>
   );
