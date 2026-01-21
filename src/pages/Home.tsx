@@ -8,25 +8,29 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BookOpen, ChevronLeft, Trophy, Flame } from 'lucide-react';
-
 export default function Home() {
-  const { profile, isAdmin } = useAuth();
-  const { data: topics, isLoading: topicsLoading } = useTopics();
-  const { data: progress, isLoading: progressLoading } = useUserProgress();
-
+  const {
+    profile,
+    isAdmin
+  } = useAuth();
+  const {
+    data: topics,
+    isLoading: topicsLoading
+  } = useTopics();
+  const {
+    data: progress,
+    isLoading: progressLoading
+  } = useUserProgress();
   const completedTopicIds = new Set(progress?.map(p => p.topic_id) || []);
   const publishedTopics = topics?.filter(t => t.is_published) || [];
   const totalTopics = publishedTopics.length;
   const completedCount = publishedTopics.filter(t => completedTopicIds.has(t.id)).length;
-  const progressPercent = totalTopics > 0 ? Math.round((completedCount / totalTopics) * 100) : 0;
+  const progressPercent = totalTopics > 0 ? Math.round(completedCount / totalTopics * 100) : 0;
 
   // Find next uncompleted topic
   const nextTopic = publishedTopics.find(t => !completedTopicIds.has(t.id));
-
   const isLoading = topicsLoading || progressLoading;
-
-  return (
-    <AppLayout>
+  return <AppLayout>
       <div className="min-h-screen" dir="rtl">
         {/* Header */}
         <header className="bg-gradient-hero text-primary-foreground px-4 pt-8 pb-12">
@@ -36,9 +40,7 @@ export default function Home() {
                 <p className="text-primary-foreground/70 text-sm">مرحباً بك،</p>
                 <h1 className="text-2xl font-bold">{profile?.full_name || 'قارئ'}</h1>
               </div>
-              {profile && (
-                <PointsBadge points={profile.total_points} size="lg" />
-              )}
+              {profile && <PointsBadge points={profile.total_points} size="lg" />}
             </div>
 
             {/* Progress Card */}
@@ -71,8 +73,7 @@ export default function Home() {
         {/* Content */}
         <div className="px-4 pt-20 pb-6 max-w-lg mx-auto space-y-6">
           {/* Admin Quick Access */}
-          {isAdmin && (
-            <Link to="/admin">
+          {isAdmin && <Link to="/admin">
               <Card className="p-4 border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -87,12 +88,10 @@ export default function Home() {
                   <ChevronLeft className="w-5 h-5 text-primary" />
                 </div>
               </Card>
-            </Link>
-          )}
+            </Link>}
 
           {/* Continue Reading */}
-          {nextTopic && (
-            <section>
+          {nextTopic && <section>
               <h2 className="text-lg font-semibold mb-3">أكمل القراءة</h2>
               <Link to={`/topic/${nextTopic.id}`}>
                 <Card className="card-gold p-5 hover:shadow-lg transition-shadow">
@@ -119,13 +118,12 @@ export default function Home() {
                   </Button>
                 </Card>
               </Link>
-            </section>
-          )}
+            </section>}
 
           {/* Quick Stats */}
           <section>
             <h2 className="text-lg font-semibold mb-3">إحصائياتك</h2>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 my-[10px] py-0 px-0 mx-0">
               <Card className="p-4 text-center">
                 <div className="text-3xl font-bold text-primary mb-1">
                   {profile?.topics_completed || 0}
@@ -149,14 +147,11 @@ export default function Home() {
             </Button>
           </Link>
 
-          {isLoading && (
-            <div className="space-y-4">
+          {isLoading && <div className="space-y-4">
               <Skeleton className="h-32 w-full rounded-xl" />
               <Skeleton className="h-24 w-full rounded-xl" />
-            </div>
-          )}
+            </div>}
         </div>
       </div>
-    </AppLayout>
-  );
+    </AppLayout>;
 }
