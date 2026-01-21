@@ -97,18 +97,18 @@ export default function Auth() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-gold mb-4 shadow-gold">
-            <BookOpen className="w-8 h-8 text-accent-foreground" />
+            <BookOpen className="w-8 h-8 text-foreground" />
           </div>
-          <h1 className="text-3xl font-bold text-primary-foreground">رحلة الكتاب المقدس</h1>
-          <p className="text-primary-foreground/70 mt-2">اقرأ. تعلم. انمُ.</p>
+          <h1 className="text-3xl font-bold text-white">رحلة الكتاب المقدس</h1>
+          <p className="text-white/70 mt-2">اقرأ. تعلم. انمُ.</p>
         </div>
 
-        <Card className="shadow-lg border-0">
+        <Card className="shadow-xl border-0 bg-card/95 backdrop-blur-sm">
           <Tabs defaultValue="login" className="w-full">
-            <CardHeader className="pb-2">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">تسجيل الدخول</TabsTrigger>
-                <TabsTrigger value="signup">حساب جديد</TabsTrigger>
+            <CardHeader className="pb-4 pt-6">
+              <TabsList className="grid w-full grid-cols-2 bg-muted/50">
+                <TabsTrigger value="login" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">تسجيل الدخول</TabsTrigger>
+                <TabsTrigger value="signup" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">حساب جديد</TabsTrigger>
               </TabsList>
             </CardHeader>
             
@@ -139,7 +139,7 @@ export default function Auth() {
                       required
                     />
                   </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md hover:shadow-lg transition-shadow" disabled={isLoading}>
                     {isLoading ? (
                       <>
                         <Loader2 className="w-4 h-4 ml-2 animate-spin" />
@@ -189,7 +189,7 @@ export default function Auth() {
                       required
                     />
                   </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md hover:shadow-lg transition-shadow" disabled={isLoading}>
                     {isLoading ? (
                       <>
                         <Loader2 className="w-4 h-4 ml-2 animate-spin" />

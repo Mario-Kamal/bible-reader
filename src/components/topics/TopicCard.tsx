@@ -35,8 +35,8 @@ export function TopicCard({ topic, isCompleted, isLocked, index }: TopicCardProp
   return (
     <Link to={`/topic/${topic.id}`}>
       <Card className={cn(
-        "card-gold p-4 transition-all hover:shadow-lg hover:-translate-y-0.5 animate-fade-in",
-        isCompleted && "bg-success/5 border-success/20"
+        "card-gold p-4 transition-all hover:shadow-lg hover:-translate-y-0.5 animate-fade-in bg-card",
+        isCompleted && "bg-success/5 border-success/30"
       )} style={{ animationDelay: `${index * 50}ms` }}>
         <div className="flex items-center gap-4">
           <div className={cn(
