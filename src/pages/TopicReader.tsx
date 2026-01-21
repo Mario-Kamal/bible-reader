@@ -20,7 +20,7 @@ export default function TopicReader() {
   const completeTopic = useCompleteTopic();
   
   const [showCompletion, setShowCompletion] = useState(false);
-  const [activeTab, setActiveTab] = useState<'read' | 'listen' | 'practice'>('read');
+  const [activeTab, setActiveTab] = useState<'read' | 'listen'>('read');
 
   const isCompleted = progress?.some(p => p.topic_id === topicId);
   const sortedVerses = topic?.verses?.sort((a, b) => a.order_index - b.order_index) || [];
@@ -120,7 +120,7 @@ export default function TopicReader() {
         {/* Tabs */}
         <div className="px-4 py-4 max-w-2xl mx-auto">
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="read" className="gap-1">
                 <BookOpen className="w-4 h-4" />
                 قراءة
@@ -129,10 +129,12 @@ export default function TopicReader() {
                 <Volume2 className="w-4 h-4" />
                 استماع
               </TabsTrigger>
+              {/* Practice tab - temporarily disabled
               <TabsTrigger value="practice" className="gap-1">
                 <Mic className="w-4 h-4" />
                 تدريب
               </TabsTrigger>
+              */}
             </TabsList>
 
             {/* Read Tab */}
@@ -198,9 +200,6 @@ export default function TopicReader() {
                   <audio src={topic.audio_url} controls className="w-full" />
                 ) : (
                   <div className="space-y-4">
-                    <p className="text-xs text-muted-foreground">
-                      اضغط على أيقونة الصوت بجانب كل آية للاستماع
-                    </p>
                     <AIReader text={fullText} />
                     <p className="text-xs text-muted-foreground">
                       استمع للموضوع كاملاً
@@ -209,25 +208,47 @@ export default function TopicReader() {
                 )}
               </Card>
 
-              {/* Individual verses for listening */}
-              <div className="space-y-3">
-                {sortedVerses.map((verse, index) => (
-                  <Card key={verse.id} className="p-4 flex items-center gap-3">
-                    <AIReader text={verse.verse_text} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-primary">
-                        {verse.book} {verse.chapter}:{verse.verse_start}
-                      </p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {verse.verse_text.slice(0, 50)}...
-                      </p>
+              {/* Full text for listening */}
+              <Card className="p-5">
+                <h4 className="font-semibold mb-4 flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-primary" />
+                  النص الكامل
+                </h4>
+                <div className="space-y-4">
+                  {sortedVerses.map((verse, index) => (
+                    <div key={verse.id} className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary mt-1">
+                        {index + 1}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-xs font-medium text-primary mb-1">
+                          {verse.book} {verse.chapter}:{verse.verse_start}
+                          {verse.verse_end && verse.verse_end !== verse.verse_start && `-${verse.verse_end}`}
+                        </p>
+                        <p className="scripture-text text-sm leading-relaxed">
+                          {verse.verse_text}
+                        </p>
+                      </div>
                     </div>
-                  </Card>
-                ))}
-              </div>
+                  ))}
+                </div>
+              </Card>
+
+              {/* Interpretation in listen tab too */}
+              {topic.interpretation && (
+                <Card className="card-gold p-5">
+                  <h3 className="font-semibold mb-3 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-accent" />
+                    التفسير
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {topic.interpretation}
+                  </p>
+                </Card>
+              )}
             </TabsContent>
 
-            {/* Practice Tab */}
+            {/* Practice Tab - temporarily disabled
             <TabsContent value="practice" className="space-y-6 mt-6">
               <Card className="p-6">
                 <div className="text-center mb-6">
@@ -250,7 +271,6 @@ export default function TopicReader() {
                 />
               </Card>
 
-              {/* Practice individual verses */}
               {sortedVerses.length > 1 && (
                 <div className="space-y-4">
                   <h4 className="font-semibold">تدرب على كل آية</h4>
@@ -273,6 +293,7 @@ export default function TopicReader() {
                 </div>
               )}
             </TabsContent>
+            */}
           </Tabs>
         </div>
 
