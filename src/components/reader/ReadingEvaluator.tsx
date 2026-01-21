@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Mic, Square, Loader2, Trophy, RefreshCw } from 'lucide-react';
+import { Mic, Square, Loader2, Trophy, RefreshCw, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ReadingEvaluatorProps {
@@ -19,58 +19,102 @@ interface EvaluationResult {
   spokenText: string;
 }
 
+// Check if browser supports speech recognition
+const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
 export function ReadingEvaluator({ expectedText, onComplete }: ReadingEvaluatorProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [result, setResult] = useState<EvaluationResult | null>(null);
+  const [transcript, setTranscript] = useState('');
+  const [isSupported, setIsSupported] = useState(true);
+  const recognitionRef = useRef<any>(null);
 
-  const startRecording = async () => {
+  useEffect(() => {
+    if (!SpeechRecognition) {
+      setIsSupported(false);
+    }
+  }, []);
+
+  const startRecording = () => {
+    if (!SpeechRecognition) {
+      toast.error('المتصفح لا يدعم التعرف على الصوت');
+      return;
+    }
+
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
-      const chunks: Blob[] = [];
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'ar-SA'; // Arabic (Saudi Arabia)
+      recognition.continuous = true;
+      recognition.interimResults = true;
 
-      recorder.ondataavailable = (e) => chunks.push(e.data);
-      recorder.onstop = async () => {
-        const audioBlob = new Blob(chunks, { type: 'audio/webm' });
-        stream.getTracks().forEach(track => track.stop());
-        await evaluateReading(audioBlob);
+      let finalTranscript = '';
+
+      recognition.onresult = (event: any) => {
+        let interimTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript + ' ';
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+        setTranscript(finalTranscript + interimTranscript);
       };
 
-      recorder.start();
-      setMediaRecorder(recorder);
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        if (event.error === 'not-allowed') {
+          toast.error('يرجى السماح بالوصول للميكروفون');
+        } else {
+          toast.error('حدث خطأ في التعرف على الصوت');
+        }
+        setIsRecording(false);
+      };
+
+      recognition.onend = () => {
+        if (isRecording && finalTranscript) {
+          evaluateReading(finalTranscript.trim());
+        }
+        setIsRecording(false);
+      };
+
+      recognition.start();
+      recognitionRef.current = recognition;
       setIsRecording(true);
+      setTranscript('');
       setResult(null);
     } catch (error) {
-      console.error('Recording error:', error);
-      toast.error('فشل في بدء التسجيل. تأكد من السماح بالميكروفون.');
+      console.error('Failed to start recognition:', error);
+      toast.error('فشل في بدء التسجيل');
     }
   };
 
   const stopRecording = () => {
-    if (mediaRecorder) {
-      mediaRecorder.stop();
-      setIsRecording(false);
-      setMediaRecorder(null);
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
     }
   };
 
-  const evaluateReading = async (audioBlob: Blob) => {
+  const evaluateReading = async (spokenText: string) => {
+    if (!spokenText.trim()) {
+      toast.error('لم يتم التعرف على أي كلام. حاول مرة أخرى.');
+      return;
+    }
+
     setIsEvaluating(true);
     try {
-      const formData = new FormData();
-      formData.append('audio', audioBlob, 'recording.webm');
-      formData.append('expectedText', expectedText);
-
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/evaluate-reading`,
         {
           method: 'POST',
           headers: {
+            'Content-Type': 'application/json',
             'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: formData,
+          body: JSON.stringify({ spokenText, expectedText }),
         }
       );
 
@@ -99,7 +143,19 @@ export function ReadingEvaluator({ expectedText, onComplete }: ReadingEvaluatorP
 
   const reset = () => {
     setResult(null);
+    setTranscript('');
   };
+
+  if (!isSupported) {
+    return (
+      <Card className="p-4 text-center">
+        <AlertCircle className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+        <p className="text-sm text-muted-foreground">
+          المتصفح لا يدعم التعرف على الصوت. جرب Chrome أو Safari.
+        </p>
+      </Card>
+    );
+  }
 
   if (result) {
     return (
@@ -126,6 +182,13 @@ export function ReadingEvaluator({ expectedText, onComplete }: ReadingEvaluatorP
         <div className="text-sm text-muted-foreground">
           <p>{result.correctWords} من {result.totalWords} كلمة صحيحة</p>
         </div>
+
+        {result.spokenText && (
+          <div className="p-3 bg-muted/50 rounded-lg">
+            <p className="text-xs text-muted-foreground mb-1">ما قلته:</p>
+            <p className="text-sm">{result.spokenText}</p>
+          </div>
+        )}
 
         {result.feedback && (
           <p className="text-sm">{result.feedback}</p>
@@ -162,6 +225,13 @@ export function ReadingEvaluator({ expectedText, onComplete }: ReadingEvaluatorP
           <p className="text-sm text-muted-foreground">
             {isRecording ? 'اضغط للإيقاف' : 'اضغط للتسجيل والقراءة بصوتك'}
           </p>
+          
+          {transcript && (
+            <div className="w-full p-3 bg-muted/50 rounded-lg text-center">
+              <p className="text-xs text-muted-foreground mb-1">جاري التسجيل...</p>
+              <p className="text-sm">{transcript}</p>
+            </div>
+          )}
         </>
       )}
     </div>

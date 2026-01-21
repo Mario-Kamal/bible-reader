@@ -11,48 +11,22 @@ serve(async (req) => {
   }
 
   try {
-    const formData = await req.formData();
-    const audioFile = formData.get("audio") as File;
-    const expectedText = formData.get("expectedText") as string;
+    const { spokenText, expectedText } = await req.json();
 
-    if (!audioFile || !expectedText) {
-      throw new Error("Audio file and expected text are required");
+    if (!spokenText || !expectedText) {
+      throw new Error("Spoken text and expected text are required");
     }
 
-    const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
-    if (!ELEVENLABS_API_KEY) {
-      throw new Error("ELEVENLABS_API_KEY is not configured");
+    if (!LOVABLE_API_KEY) {
+      throw new Error("LOVABLE_API_KEY is not configured");
     }
-
-    // Step 1: Transcribe the audio using ElevenLabs Speech-to-Text
-    const apiFormData = new FormData();
-    apiFormData.append("file", audioFile);
-    apiFormData.append("model_id", "scribe_v2");
-    apiFormData.append("language_code", "ara");
-
-    const transcribeResponse = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
-      method: "POST",
-      headers: {
-        "xi-api-key": ELEVENLABS_API_KEY,
-      },
-      body: apiFormData,
-    });
-
-    if (!transcribeResponse.ok) {
-      const errorText = await transcribeResponse.text();
-      console.error("Transcription error:", transcribeResponse.status, errorText);
-      throw new Error("Transcription failed");
-    }
-
-    const transcription = await transcribeResponse.json();
-    const spokenText = transcription.text || "";
 
     console.log("Expected:", expectedText);
     console.log("Spoken:", spokenText);
 
-    // Step 2: Use Lovable AI to evaluate the reading accuracy
+    // Use Lovable AI to evaluate the reading accuracy
     const evaluationPrompt = `أنت خبير في تقييم القراءة. قارن بين النص المتوقع والنص المنطوق وقيّم دقة القراءة.
 
 النص المتوقع:
