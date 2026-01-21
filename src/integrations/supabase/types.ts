@@ -93,6 +93,7 @@ export type Database = {
       }
       topics: {
         Row: {
+          audio_url: string | null
           created_at: string
           description: string | null
           id: string
@@ -105,6 +106,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          audio_url?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -117,6 +119,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          audio_url?: string | null
           created_at?: string
           description?: string | null
           id?: string
