@@ -22,7 +22,15 @@ export default function Home() {
     isLoading: progressLoading
   } = useUserProgress();
   const completedTopicIds = new Set(progress?.map(p => p.topic_id) || []);
-  const publishedTopics = topics?.filter(t => t.is_published) || [];
+  
+  // Filter published topics and check if they are scheduled for today or earlier
+  const now = new Date();
+  const publishedTopics = topics?.filter(t => {
+    if (!t.is_published) return false;
+    if (!t.scheduled_for) return true;
+    return new Date(t.scheduled_for) <= now;
+  }) || [];
+  
   const totalTopics = publishedTopics.length;
   const completedCount = publishedTopics.filter(t => completedTopicIds.has(t.id)).length;
   const progressPercent = totalTopics > 0 ? Math.round(completedCount / totalTopics * 100) : 0;

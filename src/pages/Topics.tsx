@@ -9,7 +9,14 @@ export default function Topics() {
   const { data: progress, isLoading: progressLoading } = useUserProgress();
 
   const completedTopicIds = new Set(progress?.map(p => p.topic_id) || []);
-  const publishedTopics = topics?.filter(t => t.is_published) || [];
+  
+  // Filter published topics and check if they are scheduled for today or earlier
+  const now = new Date();
+  const publishedTopics = topics?.filter(t => {
+    if (!t.is_published) return false;
+    if (!t.scheduled_for) return true; // No schedule means always available
+    return new Date(t.scheduled_for) <= now;
+  }) || [];
   
   const isLoading = topicsLoading || progressLoading;
 
