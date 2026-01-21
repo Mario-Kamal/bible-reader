@@ -1,7 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Volume2, Pause, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { Volume2, Pause, VolumeX } from 'lucide-react';
 
 interface AIReaderProps {
   text: string;
@@ -9,70 +8,70 @@ interface AIReaderProps {
 
 export function AIReader({ text }: AIReaderProps) {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+  const [isSupported, setIsSupported] = useState(true);
 
-  const playAudio = async () => {
-    if (isPlaying && audio) {
-      audio.pause();
+  useEffect(() => {
+    if (!('speechSynthesis' in window)) {
+      setIsSupported(false);
+    }
+    
+    // Cleanup on unmount
+    return () => {
+      window.speechSynthesis?.cancel();
+    };
+  }, []);
+
+  const togglePlay = () => {
+    if (!('speechSynthesis' in window)) {
+      return;
+    }
+
+    if (isPlaying) {
+      window.speechSynthesis.cancel();
       setIsPlaying(false);
       return;
     }
 
-    setIsLoading(true);
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/text-to-speech`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ text }),
-        }
-      );
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
 
-      if (!response.ok) {
-        throw new Error('TTS failed');
-      }
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'ar-SA'; // Arabic
+    utterance.rate = 0.9; // Slightly slower for clarity
+    utterance.pitch = 1;
 
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const newAudio = new Audio(audioUrl);
-      
-      newAudio.onended = () => {
-        setIsPlaying(false);
-        URL.revokeObjectURL(audioUrl);
-      };
-      
-      newAudio.onerror = () => {
-        setIsPlaying(false);
-        toast.error('فشل في تشغيل الصوت');
-      };
-
-      setAudio(newAudio);
-      await newAudio.play();
-      setIsPlaying(true);
-    } catch (error) {
-      console.error('TTS error:', error);
-      toast.error('فشل في تحميل الصوت');
-    } finally {
-      setIsLoading(false);
+    // Try to find an Arabic voice
+    const voices = window.speechSynthesis.getVoices();
+    const arabicVoice = voices.find(voice => 
+      voice.lang.startsWith('ar') || voice.name.includes('Arabic')
+    );
+    if (arabicVoice) {
+      utterance.voice = arabicVoice;
     }
+
+    utterance.onend = () => setIsPlaying(false);
+    utterance.onerror = () => setIsPlaying(false);
+
+    window.speechSynthesis.speak(utterance);
+    setIsPlaying(true);
   };
+
+  if (!isSupported) {
+    return (
+      <Button variant="ghost" size="icon" disabled className="h-8 w-8">
+        <VolumeX className="w-4 h-4 text-muted-foreground" />
+      </Button>
+    );
+  }
 
   return (
     <Button
       variant="ghost"
       size="icon"
-      onClick={playAudio}
-      disabled={isLoading}
+      onClick={togglePlay}
       className="h-8 w-8"
     >
-      {isLoading ? (
-        <Loader2 className="w-4 h-4 animate-spin" />
-      ) : isPlaying ? (
+      {isPlaying ? (
         <Pause className="w-4 h-4" />
       ) : (
         <Volume2 className="w-4 h-4" />

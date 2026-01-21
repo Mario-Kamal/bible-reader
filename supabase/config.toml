@@ -3,8 +3,5 @@ project_id = "zgexnqpeywpsbrkrfrsu"
 [functions.generate-topic]
 verify_jwt = false
 
-[functions.text-to-speech]
-verify_jwt = false
-
 [functions.evaluate-reading]
 verify_jwt = false
