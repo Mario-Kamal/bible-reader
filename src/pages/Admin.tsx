@@ -64,6 +64,8 @@ export default function Admin() {
       points_reward?: number;
       verses: { book: string; chapter: number; verse_start: number; verse_end: number | null; verse_text: string }[];
       audio_url?: string | null;
+      scheduled_for?: string | null;
+      is_published?: boolean;
     }) => {
       // Create topic
       const { data: topic, error: topicError } = await supabase
@@ -74,8 +76,9 @@ export default function Admin() {
           interpretation: topicData.interpretation,
           points_reward: topicData.points_reward || 10,
           order_index: (topics?.length || 0) + 1,
-          is_published: false,
+          is_published: topicData.is_published ?? false,
           audio_url: topicData.audio_url || null,
+          scheduled_for: topicData.scheduled_for || null,
         })
         .select()
         .single();
@@ -103,6 +106,7 @@ export default function Admin() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-topics'] });
+      queryClient.invalidateQueries({ queryKey: ['topics'] });
       setShowManualForm(false);
       toast.success('تم حفظ الموضوع!');
     },
@@ -125,6 +129,8 @@ export default function Admin() {
         points_reward: number;
         verses: { book: string; chapter: number; verse_start: number; verse_end: number | null; verse_text: string }[];
         audio_url?: string | null;
+        scheduled_for?: string | null;
+        is_published?: boolean;
       };
     }) => {
       // Update topic
@@ -136,6 +142,8 @@ export default function Admin() {
           interpretation: data.interpretation,
           points_reward: data.points_reward,
           audio_url: data.audio_url,
+          scheduled_for: data.scheduled_for,
+          is_published: data.is_published,
           updated_at: new Date().toISOString(),
         })
         .eq('id', topicId);
@@ -166,6 +174,7 @@ export default function Admin() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-topics'] });
+      queryClient.invalidateQueries({ queryKey: ['topics'] });
       setEditingTopic(null);
       toast.success('تم تحديث الموضوع!');
     },
@@ -296,6 +305,8 @@ export default function Admin() {
                     verse_text: v.verse_text,
                   })) || [],
                   audio_url: editingTopicData.audio_url,
+                  scheduled_for: editingTopicData.scheduled_for,
+                  is_published: editingTopicData.is_published,
                 }}
                 onSave={(data) => updateTopic.mutate({ topicId: editingTopic!, data })}
                 onCancel={() => setEditingTopic(null)}

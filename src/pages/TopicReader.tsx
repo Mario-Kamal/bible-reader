@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AIReader } from '@/components/reader/AIReader';
 import { ReadingEvaluator } from '@/components/reader/ReadingEvaluator';
+import { ShareButton } from '@/components/share/ShareButton';
 import { ArrowRight, Check, BookOpen, Sparkles, Volume2, Mic } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -105,6 +106,11 @@ export default function TopicReader() {
                 {sortedVerses.length} آية
               </p>
             </div>
+            <ShareButton
+              title={topic.title}
+              text={topic.description || 'موضوع من رحلة الكتاب المقدس'}
+              verse={sortedVerses[0]?.verse_text}
+            />
             {!isCompleted && (
               <PointsBadge points={topic.points_reward} size="sm" />
             )}

@@ -1,10 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTopics, useUserProgress } from '@/hooks/useTopics';
 import { useDailyTopic } from '@/hooks/useDailyTopic';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { DailyReader } from '@/components/daily/DailyReader';
+import { NotificationPrompt } from '@/components/notifications/NotificationPrompt';
 import { PointsBadge } from '@/components/ui/PointsBadge';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { Card } from '@/components/ui/card';
@@ -92,6 +93,9 @@ export default function Home() {
 
         {/* Content */}
         <div className="px-4 pt-20 pb-6 max-w-lg mx-auto space-y-6">
+          {/* Notification Prompt */}
+          <NotificationPrompt />
+
           {/* Admin Quick Access */}
           {isAdmin && (
             <Link to="/admin">

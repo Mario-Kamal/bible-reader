@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { PointsBadge } from '@/components/ui/PointsBadge';
+import { NotificationToggle } from '@/components/notifications/NotificationPrompt';
 import { 
   User, 
   LogOut, 
@@ -12,7 +13,8 @@ import {
   Trophy, 
   Target, 
   Calendar,
-  Settings
+  Settings,
+  Bell
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
@@ -137,8 +139,24 @@ export default function Profile() {
           </Card>
         </div>
 
+        {/* Notifications Settings */}
+        <div className="px-4 py-4 max-w-lg mx-auto">
+          <Card className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Bell className="w-5 h-5 text-primary" />
+                <div>
+                  <p className="font-medium">الإشعارات اليومية</p>
+                  <p className="text-xs text-muted-foreground">تذكير بموضوع القراءة الجديد</p>
+                </div>
+              </div>
+              <NotificationToggle />
+            </div>
+          </Card>
+        </div>
+
         {/* Actions */}
-        <div className="px-4 py-6 max-w-lg mx-auto space-y-3">
+        <div className="px-4 py-4 max-w-lg mx-auto space-y-3">
           {isAdmin && (
             <Button 
               variant="outline" 
