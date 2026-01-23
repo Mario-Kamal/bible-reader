@@ -1,6 +1,8 @@
+import { format } from 'date-fns';
+import { ar } from 'date-fns/locale';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Pencil, Mic, BookOpen } from 'lucide-react';
+import { Pencil, Mic, BookOpen, Calendar } from 'lucide-react';
 
 interface Topic {
   id: string;
@@ -8,6 +10,7 @@ interface Topic {
   is_published: boolean;
   audio_url: string | null;
   points_reward: number;
+  scheduled_for: string | null;
   verses?: { id: string }[];
 }
 
@@ -48,9 +51,20 @@ export function TopicsList({ topics, onEdit, onTogglePublish }: TopicsListProps)
                     </span>
                   )}
                 </p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {topic.verses?.length || 0} آية • {topic.points_reward} نقطة
-                </p>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                  <span>{topic.verses?.length || 0} آية</span>
+                  <span>•</span>
+                  <span>{topic.points_reward} نقطة</span>
+                  {topic.scheduled_for && (
+                    <>
+                      <span>•</span>
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {format(new Date(topic.scheduled_for), 'd MMM', { locale: ar })}
+                      </span>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">

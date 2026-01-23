@@ -1,12 +1,18 @@
 import { useState } from 'react';
+import { format } from 'date-fns';
+import { ar } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
-import { Plus, Trash2, Mic, Upload, X, Loader2 } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Switch } from '@/components/ui/switch';
+import { Plus, Trash2, Mic, Upload, X, Loader2, CalendarIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface Verse {
   book: string;
@@ -25,6 +31,8 @@ interface TopicFormProps {
     points_reward: number;
     verses: Verse[];
     audio_url?: string | null;
+    scheduled_for?: string | null;
+    is_published?: boolean;
   };
   onSave: (data: {
     title: string;
@@ -33,6 +41,8 @@ interface TopicFormProps {
     points_reward: number;
     verses: Verse[];
     audio_url?: string | null;
+    scheduled_for?: string | null;
+    is_published?: boolean;
   }) => void;
   onCancel: () => void;
   isSaving: boolean;
@@ -45,6 +55,10 @@ export function TopicForm({ initialData, onSave, onCancel, isSaving }: TopicForm
   const [pointsReward, setPointsReward] = useState(initialData?.points_reward || 10);
   const [verses, setVerses] = useState<Verse[]>(initialData?.verses || []);
   const [audioUrl, setAudioUrl] = useState<string | null>(initialData?.audio_url || null);
+  const [scheduledFor, setScheduledFor] = useState<Date | undefined>(
+    initialData?.scheduled_for ? new Date(initialData.scheduled_for) : undefined
+  );
+  const [isPublished, setIsPublished] = useState(initialData?.is_published ?? false);
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -156,6 +170,8 @@ export function TopicForm({ initialData, onSave, onCancel, isSaving }: TopicForm
       points_reward: pointsReward,
       verses,
       audio_url: audioUrl,
+      scheduled_for: scheduledFor?.toISOString() || null,
+      is_published: isPublished,
     });
   };
 
@@ -180,13 +196,59 @@ export function TopicForm({ initialData, onSave, onCancel, isSaving }: TopicForm
             rows={2}
           />
         </div>
-        <div>
-          <Label>النقاط</Label>
-          <Input
-            type="number"
-            value={pointsReward}
-            onChange={(e) => setPointsReward(parseInt(e.target.value) || 10)}
-            min={1}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label>النقاط</Label>
+            <Input
+              type="number"
+              value={pointsReward}
+              onChange={(e) => setPointsReward(parseInt(e.target.value) || 10)}
+              min={1}
+            />
+          </div>
+          <div>
+            <Label>تاريخ النشر</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-right font-normal",
+                    !scheduledFor && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="ml-2 h-4 w-4" />
+                  {scheduledFor ? (
+                    format(scheduledFor, 'PPP', { locale: ar })
+                  ) : (
+                    <span>اختر تاريخ</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={scheduledFor}
+                  onSelect={setScheduledFor}
+                  initialFocus
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+        </div>
+        
+        {/* Publish Toggle */}
+        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+          <div>
+            <Label className="text-base">نشر الموضوع</Label>
+            <p className="text-sm text-muted-foreground">
+              {isPublished ? 'الموضوع منشور وسيظهر للقراء' : 'الموضوع مسودة'}
+            </p>
+          </div>
+          <Switch
+            checked={isPublished}
+            onCheckedChange={setIsPublished}
           />
         </div>
       </div>
