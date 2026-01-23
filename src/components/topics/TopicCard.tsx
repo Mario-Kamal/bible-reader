@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
-import { BookOpen, Check, Lock, ChevronLeft } from 'lucide-react';
+import { format } from 'date-fns';
+import { ar } from 'date-fns/locale';
+import { BookOpen, Check, Lock, ChevronLeft, Calendar } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { PointsBadge } from '@/components/ui/PointsBadge';
 import { cn } from '@/lib/utils';
@@ -10,10 +12,12 @@ interface TopicCardProps {
   isCompleted: boolean;
   isLocked: boolean;
   index: number;
+  showDate?: boolean;
 }
 
-export function TopicCard({ topic, isCompleted, isLocked, index }: TopicCardProps) {
+export function TopicCard({ topic, isCompleted, isLocked, index, showDate = false }: TopicCardProps) {
   const verseCount = topic.verses?.length || 0;
+  const scheduledDate = topic.scheduled_for ? new Date(topic.scheduled_for) : null;
 
   if (isLocked) {
     return (
@@ -25,7 +29,7 @@ export function TopicCard({ topic, isCompleted, isLocked, index }: TopicCardProp
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-foreground/60 truncate">{topic.title}</h3>
-            <p className="text-sm text-muted-foreground">أكمل الموضوع السابق للفتح</p>
+            <p className="text-sm text-muted-foreground">موضوع الغد - عُد لاحقاً</p>
           </div>
         </div>
       </Card>
@@ -43,7 +47,7 @@ export function TopicCard({ topic, isCompleted, isLocked, index }: TopicCardProp
             "flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center",
             isCompleted 
               ? "bg-success text-success-foreground" 
-              : "bg-primary/10 text-primary"
+              : "bg-gradient-gold text-accent-foreground"
           )}>
             {isCompleted ? (
               <Check className="w-6 h-6" />
@@ -59,9 +63,18 @@ export function TopicCard({ topic, isCompleted, isLocked, index }: TopicCardProp
                 <span className="text-xs text-success font-medium">مكتمل</span>
               )}
             </div>
-            <p className="text-sm text-muted-foreground">
-              {verseCount} آية من أسفار متعددة
-            </p>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>{verseCount} آية</span>
+              {showDate && scheduledDate && (
+                <>
+                  <span>•</span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
+                    {format(scheduledDate, 'd MMM', { locale: ar })}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
           
           <div className="flex items-center gap-2">
