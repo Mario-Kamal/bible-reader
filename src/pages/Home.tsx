@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTopics, useUserProgress } from '@/hooks/useTopics';
@@ -12,7 +11,6 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BookOpen, ChevronLeft, Trophy, Flame } from 'lucide-react';
-import { startOfDay } from 'date-fns';
 
 export default function Home() {
   const { profile, isAdmin } = useAuth();
@@ -36,21 +34,7 @@ export default function Home() {
 
   const isLoading = topicsLoading || progressLoading;
 
-  // Auto-generate topic for today ONLY if admin and no topic exists
-  useEffect(() => {
-    if (!isAdmin) return; // Only admins can auto-generate
-    
-    const today = startOfDay(new Date());
-    const hasTodayTopic = publishedTopics.some(t => {
-      if (!t.scheduled_for) return false;
-      const topicDate = startOfDay(new Date(t.scheduled_for));
-      return topicDate.getTime() === today.getTime();
-    });
-
-    if (!isLoading && !hasTodayTopic && !isGenerating) {
-      generateTopicForDate(today);
-    }
-  }, [publishedTopics, isLoading, isAdmin]);
+  // Removed auto-generation - now only generates when admin clicks the button
 
   return (
     <AppLayout>

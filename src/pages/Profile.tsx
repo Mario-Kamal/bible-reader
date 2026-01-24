@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTopics, useUserProgress } from '@/hooks/useTopics';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -6,6 +7,8 @@ import { Card } from '@/components/ui/card';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { PointsBadge } from '@/components/ui/PointsBadge';
 import { NotificationToggle } from '@/components/notifications/NotificationPrompt';
+import { EditProfileDialog } from '@/components/profile/EditProfileDialog';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   User, 
   LogOut, 
@@ -14,17 +17,19 @@ import {
   Target, 
   Calendar,
   Settings,
-  Bell
+  Bell,
+  Pencil
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 
 export default function Profile() {
-  const { profile, signOut, isAdmin } = useAuth();
+  const { profile, signOut, isAdmin, refreshProfile } = useAuth();
   const { data: topics } = useTopics();
   const { data: progress } = useUserProgress();
   const navigate = useNavigate();
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   const publishedTopics = topics?.filter(t => t.is_published) || [];
   const totalTopics = publishedTopics.length;
@@ -63,8 +68,19 @@ export default function Profile() {
         {/* Header */}
         <header className="bg-gradient-hero text-primary-foreground px-4 pt-8 pb-16">
           <div className="max-w-lg mx-auto text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary-foreground/10 mb-4">
-              <User className="w-10 h-10" />
+            <div className="relative inline-block mb-4">
+              <Avatar className="w-20 h-20 border-4 border-primary-foreground/20">
+                <AvatarImage src="" alt={profile?.full_name} />
+                <AvatarFallback className="bg-primary-foreground/10 text-primary-foreground">
+                  <User className="w-10 h-10" />
+                </AvatarFallback>
+              </Avatar>
+              <button
+                onClick={() => setShowEditDialog(true)}
+                className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary-foreground text-primary flex items-center justify-center shadow-lg hover:bg-primary-foreground/90 transition-colors"
+              >
+                <Pencil className="w-4 h-4" />
+              </button>
             </div>
             <h1 className="text-2xl font-bold mb-1">{profile?.full_name || 'قارئ'}</h1>
             <p className="text-primary-foreground/70">{profile?.phone}</p>
@@ -157,6 +173,15 @@ export default function Profile() {
 
         {/* Actions */}
         <div className="px-4 py-4 max-w-lg mx-auto space-y-3">
+          <Button 
+            variant="outline" 
+            className="w-full" 
+            onClick={() => setShowEditDialog(true)}
+          >
+            <Pencil className="w-4 h-4 ml-2" />
+            تعديل الملف الشخصي
+          </Button>
+
           {isAdmin && (
             <Button 
               variant="outline" 
@@ -177,6 +202,14 @@ export default function Profile() {
             تسجيل الخروج
           </Button>
         </div>
+
+        {/* Edit Profile Dialog */}
+        <EditProfileDialog
+          open={showEditDialog}
+          onOpenChange={setShowEditDialog}
+          profile={profile}
+          onSuccess={refreshProfile}
+        />
       </div>
     </AppLayout>
   );

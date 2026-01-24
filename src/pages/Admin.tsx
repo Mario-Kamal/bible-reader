@@ -12,6 +12,8 @@ import { AdminHeader } from '@/components/admin/AdminHeader';
 import { AdminStats } from '@/components/admin/AdminStats';
 import { AITopicGenerator } from '@/components/admin/AITopicGenerator';
 import { TopicsList } from '@/components/admin/TopicsList';
+import { UsersListDialog } from '@/components/admin/UsersListDialog';
+import { TopicsListDialog } from '@/components/admin/TopicsListDialog';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -35,6 +37,9 @@ export default function Admin() {
   
   const [showManualForm, setShowManualForm] = useState(false);
   const [editingTopic, setEditingTopic] = useState<string | null>(null);
+  const [showUsersDialog, setShowUsersDialog] = useState(false);
+  const [showActiveUsersDialog, setShowActiveUsersDialog] = useState(false);
+  const [showTopicsDialog, setShowTopicsDialog] = useState(false);
 
   // Fetch all topics for admin
   const { data: topics } = useQuery({
@@ -42,6 +47,41 @@ export default function Admin() {
     queryFn: async () => {
       const { data } = await supabase.from('topics').select('*, verses(*)').order('order_index');
       return data || [];
+    },
+  });
+
+  // Fetch all users
+  const { data: allUsers } = useQuery({
+    queryKey: ['admin-all-users'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+      return data || [];
+    },
+  });
+
+  // Fetch active users (users with progress)
+  const { data: activeUsersData } = useQuery({
+    queryKey: ['admin-active-users'],
+    queryFn: async () => {
+      const { data: progressData } = await supabase
+        .from('user_progress')
+        .select('user_id')
+        .limit(1000);
+      
+      const activeUserIds = [...new Set(progressData?.map(p => p.user_id) || [])];
+      
+      if (activeUserIds.length === 0) return [];
+      
+      const { data: users } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('id', activeUserIds)
+        .order('total_points', { ascending: false });
+      
+      return users || [];
     },
   });
 
@@ -195,6 +235,27 @@ export default function Admin() {
     },
   });
 
+  const deleteTopic = useMutation({
+    mutationFn: async (topicId: string) => {
+      // Delete verses first
+      await supabase.from('verses').delete().eq('topic_id', topicId);
+      // Delete questions
+      await supabase.from('questions').delete().eq('topic_id', topicId);
+      // Delete the topic
+      const { error } = await supabase.from('topics').delete().eq('id', topicId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-topics'] });
+      queryClient.invalidateQueries({ queryKey: ['topics'] });
+      toast.success('تم حذف الموضوع!');
+    },
+    onError: (error) => {
+      toast.error('فشل في الحذف');
+      console.error(error);
+    },
+  });
+
   const handleAISave = (generatedTopic: GeneratedTopic) => {
     saveTopic.mutate({
       title: generatedTopic.title,
@@ -232,6 +293,9 @@ export default function Admin() {
             totalUsers={userStats?.totalUsers || 0}
             activeUsers={userStats?.activeUsers || 0}
             topicsCount={topics?.length || 0}
+            onUsersClick={() => setShowUsersDialog(true)}
+            onActiveUsersClick={() => setShowActiveUsersDialog(true)}
+            onTopicsClick={() => setShowTopicsDialog(true)}
           />
 
           {/* Add Topic Options */}
@@ -266,6 +330,7 @@ export default function Admin() {
             topics={topics || []}
             onEdit={setEditingTopic}
             onTogglePublish={(id, published) => togglePublish.mutate({ id, published })}
+            onDelete={(id) => deleteTopic.mutate(id)}
           />
         </div>
 
@@ -315,6 +380,31 @@ export default function Admin() {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Users List Dialog */}
+        <UsersListDialog
+          open={showUsersDialog}
+          onOpenChange={setShowUsersDialog}
+          users={allUsers || []}
+          title="جميع المستخدمين"
+          description="قائمة بجميع المستخدمين المسجلين"
+        />
+
+        {/* Active Users Dialog */}
+        <UsersListDialog
+          open={showActiveUsersDialog}
+          onOpenChange={setShowActiveUsersDialog}
+          users={activeUsersData || []}
+          title="القراء النشطين"
+          description="المستخدمين الذين قرأوا موضوعاً واحداً على الأقل"
+        />
+
+        {/* Topics Dialog */}
+        <TopicsListDialog
+          open={showTopicsDialog}
+          onOpenChange={setShowTopicsDialog}
+          topics={topics || []}
+        />
       </div>
     </AppLayout>
   );

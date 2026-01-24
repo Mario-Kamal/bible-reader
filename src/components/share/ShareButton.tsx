@@ -19,7 +19,11 @@ interface ShareButtonProps {
 export function ShareButton({ title, text, verse, url }: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
   
-  const shareUrl = url || window.location.href;
+  // Use published URL or current location
+  const baseUrl = 'https://bible-reader.lovable.app';
+  const currentPath = window.location.pathname;
+  const shareUrl = url || `${baseUrl}${currentPath}`;
+  
   const shareText = verse 
     ? `📖 ${title}\n\n"${verse}"\n\n${text}`
     : `📖 ${title}\n\n${text}`;
