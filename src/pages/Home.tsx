@@ -36,8 +36,10 @@ export default function Home() {
 
   const isLoading = topicsLoading || progressLoading;
 
-  // Auto-generate topic for today if missing
+  // Auto-generate topic for today ONLY if admin and no topic exists
   useEffect(() => {
+    if (!isAdmin) return; // Only admins can auto-generate
+    
     const today = startOfDay(new Date());
     const hasTodayTopic = publishedTopics.some(t => {
       if (!t.scheduled_for) return false;
@@ -48,7 +50,7 @@ export default function Home() {
     if (!isLoading && !hasTodayTopic && !isGenerating) {
       generateTopicForDate(today);
     }
-  }, [publishedTopics, isLoading]);
+  }, [publishedTopics, isLoading, isAdmin]);
 
   return (
     <AppLayout>
@@ -128,6 +130,7 @@ export default function Home() {
               isLoading={isLoading}
               onGenerateTopic={generateTopicForDate}
               isGenerating={isGenerating}
+              isAdmin={isAdmin}
             />
           </section>
 
