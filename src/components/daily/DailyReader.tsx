@@ -16,6 +16,7 @@ interface DailyReaderProps {
   isLoading: boolean;
   onGenerateTopic?: (date: Date) => void;
   isGenerating?: boolean;
+  isAdmin?: boolean;
 }
 
 export function DailyReader({ 
@@ -23,7 +24,8 @@ export function DailyReader({
   completedTopicIds, 
   isLoading,
   onGenerateTopic,
-  isGenerating 
+  isGenerating,
+  isAdmin = false
 }: DailyReaderProps) {
   const today = startOfDay(new Date());
   const [selectedDate, setSelectedDate] = useState(today);
@@ -37,9 +39,9 @@ export function DailyReader({
     return dates;
   }, []);
 
-  // Find topic for selected date
-  const topicForDate = useMemo(() => {
-    return topics.find(t => {
+  // Find ALL topics for selected date (could be multiple)
+  const topicsForDate = useMemo(() => {
+    return topics.filter(t => {
       if (!t.scheduled_for) return false;
       const topicDate = startOfDay(new Date(t.scheduled_for));
       return isSameDay(topicDate, selectedDate);
@@ -47,7 +49,6 @@ export function DailyReader({
   }, [topics, selectedDate]);
 
   const isFutureDate = isAfter(selectedDate, today);
-  const isCompleted = topicForDate ? completedTopicIds.has(topicForDate.id) : false;
 
   const handlePrevDay = () => {
     const newDate = subDays(selectedDate, 1);
@@ -60,6 +61,12 @@ export function DailyReader({
     const newDate = addDays(selectedDate, 1);
     if (!isAfter(newDate, today)) {
       setSelectedDate(newDate);
+    }
+  };
+
+  const handleGenerateForSelectedDate = () => {
+    if (onGenerateTopic) {
+      onGenerateTopic(selectedDate);
     }
   };
 
@@ -134,7 +141,7 @@ export function DailyReader({
         })}
       </div>
 
-      {/* Topic Card for Selected Date */}
+      {/* Topic Cards for Selected Date */}
       {isLoading ? (
         <Skeleton className="h-40 w-full rounded-xl" />
       ) : isFutureDate ? (
@@ -145,50 +152,57 @@ export function DailyReader({
             عُد غداً لقراءة موضوع جديد!
           </p>
         </Card>
-      ) : topicForDate ? (
-        <Link to={`/topic/${topicForDate.id}`}>
-          <Card className={cn(
-            "card-gold p-5 transition-all hover:shadow-lg",
-            isCompleted && "bg-success/5 border-success/30"
-          )}>
-            <div className="flex items-start gap-4">
-              <div className={cn(
-                "flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center",
-                isCompleted 
-                  ? "bg-success text-success-foreground" 
-                  : "bg-gradient-gold text-accent-foreground"
-              )}>
-                {isCompleted ? (
-                  <Check className="w-7 h-7" />
-                ) : (
-                  <BookOpen className="w-6 h-6" />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-bold text-lg text-foreground">
-                    {topicForDate.title}
-                  </h3>
-                  {isCompleted && (
-                    <span className="text-xs bg-success/20 text-success px-2 py-0.5 rounded-full">
-                      مكتمل
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                  {topicForDate.description || 'استكشف هذا الموضوع من منظورات متعددة'}
-                </p>
-                <div className="flex items-center gap-3">
-                  <PointsBadge points={topicForDate.points_reward} size="sm" />
-                  <span className="text-xs text-muted-foreground">
-                    {topicForDate.verses?.length || 0} آية
-                  </span>
-                </div>
-              </div>
-              <ChevronLeft className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-            </div>
-          </Card>
-        </Link>
+      ) : topicsForDate.length > 0 ? (
+        <div className="space-y-3">
+          {topicsForDate.map((topic) => {
+            const isCompleted = completedTopicIds.has(topic.id);
+            return (
+              <Link key={topic.id} to={`/topic/${topic.id}`}>
+                <Card className={cn(
+                  "card-gold p-5 transition-all hover:shadow-lg",
+                  isCompleted && "bg-success/5 border-success/30"
+                )}>
+                  <div className="flex items-start gap-4">
+                    <div className={cn(
+                      "flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center",
+                      isCompleted 
+                        ? "bg-success text-success-foreground" 
+                        : "bg-gradient-gold text-accent-foreground"
+                    )}>
+                      {isCompleted ? (
+                        <Check className="w-7 h-7" />
+                      ) : (
+                        <BookOpen className="w-6 h-6" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-bold text-lg text-foreground">
+                          {topic.title}
+                        </h3>
+                        {isCompleted && (
+                          <span className="text-xs bg-success/20 text-success px-2 py-0.5 rounded-full">
+                            مكتمل
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                        {topic.description || 'استكشف هذا الموضوع من منظورات متعددة'}
+                      </p>
+                      <div className="flex items-center gap-3">
+                        <PointsBadge points={topic.points_reward} size="sm" />
+                        <span className="text-xs text-muted-foreground">
+                          {topic.verses?.length || 0} آية
+                        </span>
+                      </div>
+                    </div>
+                    <ChevronLeft className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                  </div>
+                </Card>
+              </Link>
+            );
+          })}
+        </div>
       ) : (
         <Card className="p-6 text-center">
           <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
@@ -196,11 +210,11 @@ export function DailyReader({
           </div>
           <h3 className="font-semibold text-lg mb-2">لا يوجد موضوع لهذا اليوم</h3>
           <p className="text-muted-foreground text-sm mb-4">
-            جاري تحميل موضوع جديد...
+            {isAdmin ? 'يمكنك توليد موضوع تلقائي لهذا اليوم' : 'لم يتم إضافة موضوع لهذا اليوم بعد'}
           </p>
-          {onGenerateTopic && (
+          {isAdmin && onGenerateTopic && (
             <Button
-              onClick={() => onGenerateTopic(selectedDate)}
+              onClick={handleGenerateForSelectedDate}
               disabled={isGenerating}
               className="gap-2"
             >
@@ -211,8 +225,9 @@ export function DailyReader({
         </Card>
       )}
 
-      {/* Today's Tip */}
-      {isSameDay(selectedDate, today) && topicForDate && !isCompleted && (
+      {/* Today's Tip - show only if there's uncompleted topic today */}
+      {isSameDay(selectedDate, today) && topicsForDate.length > 0 && 
+       topicsForDate.some(t => !completedTopicIds.has(t.id)) && (
         <div className="bg-accent/10 rounded-xl p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
             <Sparkles className="w-5 h-5 text-accent" />
@@ -220,7 +235,7 @@ export function DailyReader({
           <div>
             <p className="text-sm font-medium text-foreground">موضوع اليوم</p>
             <p className="text-xs text-muted-foreground">
-              اقرأ واحصل على {topicForDate.points_reward} نقطة!
+              اقرأ واحصل على {topicsForDate[0].points_reward} نقطة!
             </p>
           </div>
         </div>
