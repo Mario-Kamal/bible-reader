@@ -2,7 +2,18 @@ import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Pencil, Mic, BookOpen, Calendar } from 'lucide-react';
+import { Pencil, Mic, BookOpen, Calendar, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Topic {
   id: string;
@@ -18,9 +29,10 @@ interface TopicsListProps {
   topics: Topic[];
   onEdit: (id: string) => void;
   onTogglePublish: (id: string, published: boolean) => void;
+  onDelete: (id: string) => void;
 }
 
-export function TopicsList({ topics, onEdit, onTogglePublish }: TopicsListProps) {
+export function TopicsList({ topics, onEdit, onTogglePublish, onDelete }: TopicsListProps) {
   return (
     <Card className="p-5 bg-card/80 backdrop-blur-sm border-border/50">
       <div className="flex items-center gap-2 mb-4">
@@ -76,6 +88,34 @@ export function TopicsList({ topics, onEdit, onTogglePublish }: TopicsListProps)
               >
                 <Pencil className="w-4 h-4" />
               </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="opacity-70 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent dir="rtl">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>حذف الموضوع</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      هل أنت متأكد من حذف "{topic.title}"؟ لا يمكن التراجع عن هذا الإجراء.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter className="gap-2">
+                    <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={() => onDelete(topic.id)}
+                      className="bg-destructive hover:bg-destructive/90"
+                    >
+                      حذف
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
               <button
                 onClick={() => onTogglePublish(topic.id, !topic.is_published)}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${

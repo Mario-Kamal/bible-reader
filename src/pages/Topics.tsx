@@ -1,30 +1,27 @@
 import { useMemo } from 'react';
-import { format, startOfDay, isSameDay, subDays } from 'date-fns';
-import { ar } from 'date-fns/locale';
 import { useTopics, useUserProgress } from '@/hooks/useTopics';
 import { useDailyTopic } from '@/hooks/useDailyTopic';
+import { useAuth } from '@/contexts/AuthContext';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { TopicCard } from '@/components/topics/TopicCard';
+import { DailyReader } from '@/components/daily/DailyReader';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Card } from '@/components/ui/card';
-import { BookOpen, Calendar, Lock, Check } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { BookOpen, Calendar } from 'lucide-react';
 
 export default function Topics() {
+  const { isAdmin } = useAuth();
   const { data: topics, isLoading: topicsLoading } = useTopics();
   const { data: progress, isLoading: progressLoading } = useUserProgress();
   const { generateTopicForDate, isGenerating } = useDailyTopic();
 
   const completedTopicIds = new Set(progress?.map(p => p.topic_id) || []);
   
-  const today = startOfDay(new Date());
-  
   // Filter published topics
   const publishedTopics = useMemo(() => {
+    const now = new Date();
     return topics?.filter(t => {
       if (!t.is_published) return false;
       if (!t.scheduled_for) return true;
-      return new Date(t.scheduled_for) <= new Date();
+      return new Date(t.scheduled_for) <= now;
     }).sort((a, b) => {
       // Sort by scheduled_for date descending (newest first)
       if (!a.scheduled_for) return 1;
@@ -32,22 +29,6 @@ export default function Topics() {
       return new Date(b.scheduled_for).getTime() - new Date(a.scheduled_for).getTime();
     }) || [];
   }, [topics]);
-
-  // Group topics by date
-  const topicsByDate = useMemo(() => {
-    const grouped: { date: Date; topic: typeof publishedTopics[0] }[] = [];
-    
-    publishedTopics.forEach(topic => {
-      if (topic.scheduled_for) {
-        grouped.push({
-          date: startOfDay(new Date(topic.scheduled_for)),
-          topic
-        });
-      }
-    });
-
-    return grouped;
-  }, [publishedTopics]);
 
   const isLoading = topicsLoading || progressLoading;
 
@@ -67,7 +48,7 @@ export default function Topics() {
           </div>
         </header>
 
-        {/* Topics List */}
+        {/* Topics List - Using DailyReader like Home page */}
         <div className="px-4 py-6 max-w-lg mx-auto">
           {isLoading ? (
             <div className="space-y-3">
@@ -84,44 +65,14 @@ export default function Topics() {
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {topicsByDate.map(({ date, topic }, index) => {
-                const isCompleted = completedTopicIds.has(topic.id);
-                const isToday = isSameDay(date, today);
-                const formattedDate = format(date, 'EEEE، d MMMM', { locale: ar });
-                
-                return (
-                  <div key={topic.id} className="animate-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
-                    {/* Date Header */}
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className={cn(
-                        "px-3 py-1 rounded-full text-xs font-medium",
-                        isToday 
-                          ? "bg-primary text-primary-foreground" 
-                          : "bg-muted text-muted-foreground"
-                      )}>
-                        {isToday ? 'اليوم' : formattedDate}
-                      </div>
-                      {isCompleted && (
-                        <div className="flex items-center gap-1 text-success text-xs">
-                          <Check className="w-3 h-3" />
-                          <span>تمت القراءة</span>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* Topic Card */}
-                    <TopicCard
-                      topic={topic}
-                      isCompleted={isCompleted}
-                      isLocked={false}
-                      index={index}
-                      showDate={false}
-                    />
-                  </div>
-                );
-              })}
-            </div>
+            <DailyReader
+              topics={publishedTopics}
+              completedTopicIds={completedTopicIds}
+              isLoading={isLoading}
+              onGenerateTopic={generateTopicForDate}
+              isGenerating={isGenerating}
+              isAdmin={isAdmin}
+            />
           )}
         </div>
       </div>
