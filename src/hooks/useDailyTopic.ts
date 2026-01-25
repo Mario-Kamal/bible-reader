@@ -26,10 +26,13 @@ export function useDailyTopic() {
 
       if (data.generated) {
         toast.success('تم توليد موضوع جديد بنجاح!');
+      } else if (data.topic) {
+        toast.info('يوجد موضوع لهذا اليوم مسبقاً');
       }
 
-      // Refresh topics list
+      // Refresh topics list from all queries
       await queryClient.invalidateQueries({ queryKey: ['topics'] });
+      await queryClient.invalidateQueries({ queryKey: ['admin-topics'] });
       
       return data.topic;
     } catch (error) {

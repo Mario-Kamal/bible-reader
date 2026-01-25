@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { Calendar, BookOpen, Mic } from 'lucide-react';
@@ -8,6 +8,7 @@ import { Calendar, BookOpen, Mic } from 'lucide-react';
 interface Topic {
   id: string;
   title: string;
+  description?: string | null;
   is_published: boolean;
   scheduled_for: string | null;
   points_reward: number;
@@ -24,7 +25,7 @@ interface TopicsListDialogProps {
 export function TopicsListDialog({ open, onOpenChange, topics }: TopicsListDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto" dir="rtl">
+      <DialogContent className="max-w-lg max-h-[80vh]" dir="rtl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-primary" />
@@ -38,48 +39,54 @@ export function TopicsListDialog({ open, onOpenChange, topics }: TopicsListDialo
             لا يوجد مواضيع
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-right">العنوان</TableHead>
-                <TableHead className="text-center">الآيات</TableHead>
-                <TableHead className="text-center">النقاط</TableHead>
-                <TableHead className="text-center">الحالة</TableHead>
-                <TableHead className="text-right">التاريخ</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+          <ScrollArea className="h-[60vh] pr-4">
+            <div className="space-y-3">
               {topics.map((topic) => (
-                <TableRow key={topic.id}>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      {topic.title}
-                      {topic.audio_url && (
-                        <Mic className="w-3 h-3 text-primary" />
+                <div 
+                  key={topic.id} 
+                  className="p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-foreground truncate">
+                          {topic.title}
+                        </h3>
+                        {topic.audio_url && (
+                          <Mic className="w-3 h-3 text-primary flex-shrink-0" />
+                        )}
+                      </div>
+                      {topic.description && (
+                        <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                          {topic.description}
+                        </p>
                       )}
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <span className="text-xs text-muted-foreground">
+                          {topic.verses?.length || 0} آية
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {topic.points_reward} نقطة
+                        </span>
+                        {topic.scheduled_for && (
+                          <div className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                            <Calendar className="w-3 h-3" />
+                            {format(new Date(topic.scheduled_for), 'd MMM yyyy', { locale: ar })}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </TableCell>
-                  <TableCell className="text-center">{topic.verses?.length || 0}</TableCell>
-                  <TableCell className="text-center">{topic.points_reward}</TableCell>
-                  <TableCell className="text-center">
-                    <Badge variant={topic.is_published ? "default" : "secondary"}>
+                    <Badge 
+                      variant={topic.is_published ? "default" : "secondary"}
+                      className="flex-shrink-0"
+                    >
                       {topic.is_published ? 'منشور' : 'مسودة'}
                     </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {topic.scheduled_for ? (
-                      <div className="inline-flex items-center gap-1 text-muted-foreground text-xs">
-                        <Calendar className="w-3 h-3" />
-                        {format(new Date(topic.scheduled_for), 'd MMM yyyy', { locale: ar })}
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground text-xs">غير محدد</span>
-                    )}
-                  </TableCell>
-                </TableRow>
+                  </div>
+                </div>
               ))}
-            </TableBody>
-          </Table>
+            </div>
+          </ScrollArea>
         )}
       </DialogContent>
     </Dialog>

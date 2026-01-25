@@ -46,20 +46,19 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSuccess }: Ed
     setIsUploading(true);
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${profile.id}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
+      const fileName = `${profile.id}/${Date.now()}.${fileExt}`;
 
-      // Upload to storage
+      // Upload to avatars bucket
       const { error: uploadError } = await supabase.storage
-        .from('audio')
-        .upload(filePath, file, { upsert: true });
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
 
       if (uploadError) throw uploadError;
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
-        .from('audio')
-        .getPublicUrl(filePath);
+        .from('avatars')
+        .getPublicUrl(fileName);
 
       setAvatarUrl(publicUrl);
       toast.success('تم رفع الصورة بنجاح');
@@ -83,6 +82,7 @@ export function EditProfileDialog({ open, onOpenChange, profile, onSuccess }: Ed
         .from('profiles')
         .update({ 
           full_name: fullName.trim(),
+          avatar_url: avatarUrl || null,
           updated_at: new Date().toISOString()
         })
         .eq('id', profile.id);
