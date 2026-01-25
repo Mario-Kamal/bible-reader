@@ -9,6 +9,16 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PointsBadge } from '@/components/ui/PointsBadge';
 import { cn } from '@/lib/utils';
 import { Topic } from '@/hooks/useTopics';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface DailyReaderProps {
   topics: Topic[];
@@ -29,6 +39,7 @@ export function DailyReader({
 }: DailyReaderProps) {
   const today = startOfDay(new Date());
   const [selectedDate, setSelectedDate] = useState(today);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   
   // Generate last 7 days for the calendar strip
   const dateRange = useMemo(() => {
@@ -64,10 +75,15 @@ export function DailyReader({
     }
   };
 
-  const handleGenerateForSelectedDate = () => {
+  const handleGenerateClick = () => {
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmGenerate = () => {
     if (onGenerateTopic) {
       onGenerateTopic(selectedDate);
     }
+    setShowConfirmDialog(false);
   };
 
   return (
@@ -214,7 +230,7 @@ export function DailyReader({
           </p>
           {isAdmin && onGenerateTopic && (
             <Button
-              onClick={handleGenerateForSelectedDate}
+              onClick={handleGenerateClick}
               disabled={isGenerating}
               className="gap-2"
             >
@@ -224,6 +240,28 @@ export function DailyReader({
           )}
         </Card>
       )}
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>تأكيد توليد موضوع</AlertDialogTitle>
+            <AlertDialogDescription className="text-right">
+              هل تريد توليد موضوع جديد ليوم{' '}
+              <span className="font-bold text-foreground">
+                {format(selectedDate, 'EEEE d MMMM yyyy', { locale: ar })}
+              </span>
+              ؟
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-row-reverse gap-2">
+            <AlertDialogAction onClick={handleConfirmGenerate}>
+              نعم، توليد الموضوع
+            </AlertDialogAction>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Today's Tip - show only if there's uncompleted topic today */}
       {isSameDay(selectedDate, today) && topicsForDate.length > 0 && 

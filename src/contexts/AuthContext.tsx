@@ -8,6 +8,7 @@ interface Profile {
   phone: string;
   total_points: number;
   topics_completed: number;
+  avatar_url: string | null;
   created_at: string;
   updated_at: string;
 }

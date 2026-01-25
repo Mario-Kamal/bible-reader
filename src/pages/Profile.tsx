@@ -70,7 +70,7 @@ export default function Profile() {
           <div className="max-w-lg mx-auto text-center">
             <div className="relative inline-block mb-4">
               <Avatar className="w-20 h-20 border-4 border-primary-foreground/20">
-                <AvatarImage src="" alt={profile?.full_name} />
+                <AvatarImage src={profile?.avatar_url || ''} alt={profile?.full_name} />
                 <AvatarFallback className="bg-primary-foreground/10 text-primary-foreground">
                   <User className="w-10 h-10" />
                 </AvatarFallback>
