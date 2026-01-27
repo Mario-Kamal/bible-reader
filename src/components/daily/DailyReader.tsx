@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { format, addDays, subDays, startOfDay, isSameDay, isAfter, isBefore } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, BookOpen, Lock, Check, Calendar, Sparkles } from 'lucide-react';
@@ -19,14 +19,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { GeneratedTopicDialog } from './GeneratedTopicDialog';
 
 interface DailyReaderProps {
   topics: Topic[];
   completedTopicIds: Set<string>;
   isLoading: boolean;
-  onGenerateTopic?: (date: Date) => void;
+  onGenerateTopic?: (date: Date) => Promise<Topic | null>;
   isGenerating?: boolean;
   isAdmin?: boolean;
+  generatedTopic?: Topic | null;
+  onApproveTopic?: (topicId: string) => void;
+  isApproving?: boolean;
+  onClearGeneratedTopic?: () => void;
+  onEditTopic?: (topicId: string) => void;
 }
 
 export function DailyReader({ 
@@ -35,11 +41,18 @@ export function DailyReader({
   isLoading,
   onGenerateTopic,
   isGenerating,
-  isAdmin = false
+  isAdmin = false,
+  generatedTopic,
+  onApproveTopic,
+  isApproving,
+  onClearGeneratedTopic,
+  onEditTopic,
 }: DailyReaderProps) {
+  const navigate = useNavigate();
   const today = startOfDay(new Date());
   const [selectedDate, setSelectedDate] = useState(today);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showGeneratedDialog, setShowGeneratedDialog] = useState(false);
   
   // Generate last 7 days for the calendar strip
   const dateRange = useMemo(() => {
@@ -79,11 +92,41 @@ export function DailyReader({
     setShowConfirmDialog(true);
   };
 
-  const handleConfirmGenerate = () => {
-    if (onGenerateTopic) {
-      onGenerateTopic(selectedDate);
-    }
+  const handleConfirmGenerate = async () => {
     setShowConfirmDialog(false);
+    if (onGenerateTopic) {
+      const topic = await onGenerateTopic(selectedDate);
+      if (topic) {
+        setShowGeneratedDialog(true);
+      }
+    }
+  };
+
+  const handleApprove = () => {
+    if (generatedTopic && onApproveTopic) {
+      onApproveTopic(generatedTopic.id);
+      setShowGeneratedDialog(false);
+    }
+  };
+
+  const handleEdit = () => {
+    if (generatedTopic) {
+      setShowGeneratedDialog(false);
+      onClearGeneratedTopic?.();
+      // Navigate to admin with the topic ID for editing
+      if (onEditTopic) {
+        onEditTopic(generatedTopic.id);
+      } else {
+        navigate('/admin');
+      }
+    }
+  };
+
+  const handleCloseGeneratedDialog = (open: boolean) => {
+    setShowGeneratedDialog(open);
+    if (!open) {
+      onClearGeneratedTopic?.();
+    }
   };
 
   return (
@@ -262,6 +305,16 @@ export function DailyReader({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Generated Topic Review Dialog */}
+      <GeneratedTopicDialog
+        open={showGeneratedDialog}
+        onOpenChange={handleCloseGeneratedDialog}
+        topic={generatedTopic || null}
+        onApprove={handleApprove}
+        onEdit={handleEdit}
+        isApproving={isApproving}
+      />
 
       {/* Today's Tip - show only if there's uncompleted topic today */}
       {isSameDay(selectedDate, today) && topicsForDate.length > 0 && 

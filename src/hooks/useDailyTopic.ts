@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import type { Topic } from '@/hooks/useTopics';
 
 export function useDailyTopic() {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedTopic, setGeneratedTopic] = useState<Topic | null>(null);
   const queryClient = useQueryClient();
 
-  const generateTopicForDate = async (date: Date) => {
+  const generateTopicForDate = async (date: Date): Promise<Topic | null> => {
     setIsGenerating(true);
     try {
       // Use local date format to avoid timezone issues
@@ -24,9 +26,11 @@ export function useDailyTopic() {
         throw error;
       }
 
-      if (data.generated) {
-        toast.success('تم توليد الموضوع كمسودة - راجعه ثم انشره من لوحة التحكم');
-      } else if (data.topic) {
+      if (data.generated && data.topic) {
+        // Store the generated topic for review
+        setGeneratedTopic(data.topic);
+        toast.success('تم توليد الموضوع - راجعه ثم وافق أو عدّل');
+      } else if (data.topic && !data.generated) {
         toast.info('يوجد موضوع لهذا اليوم مسبقاً');
       }
 
@@ -44,8 +48,35 @@ export function useDailyTopic() {
     }
   };
 
+  const approveTopic = useMutation({
+    mutationFn: async (topicId: string) => {
+      const { error } = await supabase
+        .from('topics')
+        .update({ is_published: true })
+        .eq('id', topicId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['topics'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-topics'] });
+      setGeneratedTopic(null);
+      toast.success('تم نشر الموضوع بنجاح!');
+    },
+    onError: () => {
+      toast.error('فشل في نشر الموضوع');
+    },
+  });
+
+  const clearGeneratedTopic = () => {
+    setGeneratedTopic(null);
+  };
+
   return {
     generateTopicForDate,
-    isGenerating
+    isGenerating,
+    generatedTopic,
+    approveTopic,
+    clearGeneratedTopic,
   };
 }
