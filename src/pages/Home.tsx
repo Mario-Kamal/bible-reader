@@ -11,6 +11,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BookOpen, ChevronLeft, Trophy, Flame } from 'lucide-react';
+import { startOfDay, isAfter } from 'date-fns';
 
 export default function Home() {
   const { profile, isAdmin } = useAuth();
@@ -21,12 +22,16 @@ export default function Home() {
   const completedTopicIds = new Set(progress?.map(p => p.topic_id) || []);
   
   // Filter published topics
-  const now = new Date();
-  const publishedTopics = topics?.filter(t => {
-    if (!t.is_published) return false;
-    if (!t.scheduled_for) return true;
-    return new Date(t.scheduled_for) <= now;
-  }) || [];
+  const today = startOfDay(new Date());
+  const publishedTopics =
+    topics?.filter((t) => {
+      if (!t.is_published) return false;
+      if (!t.scheduled_for) return true;
+      // Use date-only comparison so topics scheduled for "today" show immediately,
+      // even if scheduled_for is stored at midnight UTC.
+      const scheduledDay = startOfDay(new Date(t.scheduled_for));
+      return !isAfter(scheduledDay, today);
+    }) || [];
   
   const totalTopics = publishedTopics.length;
   const completedCount = publishedTopics.filter(t => completedTopicIds.has(t.id)).length;

@@ -4,8 +4,11 @@ import { useDailyTopic } from '@/hooks/useDailyTopic';
 import { useAuth } from '@/contexts/AuthContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { DailyReader } from '@/components/daily/DailyReader';
+import { TopicsListView } from '@/components/topics/TopicsListView';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BookOpen, Calendar } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { startOfDay, isAfter } from 'date-fns';
 
 export default function Topics() {
   const { isAdmin } = useAuth();
@@ -17,11 +20,13 @@ export default function Topics() {
   
   // Filter published topics
   const publishedTopics = useMemo(() => {
-    const now = new Date();
+    const today = startOfDay(new Date());
     return topics?.filter(t => {
       if (!t.is_published) return false;
       if (!t.scheduled_for) return true;
-      return new Date(t.scheduled_for) <= now;
+      // Date-only comparison so today's topics appear immediately.
+      const scheduledDay = startOfDay(new Date(t.scheduled_for));
+      return !isAfter(scheduledDay, today);
     }).sort((a, b) => {
       // Sort by scheduled_for date descending (newest first)
       if (!a.scheduled_for) return 1;
@@ -65,14 +70,27 @@ export default function Topics() {
               </p>
             </div>
           ) : (
-            <DailyReader
-              topics={publishedTopics}
-              completedTopicIds={completedTopicIds}
-              isLoading={isLoading}
-              onGenerateTopic={generateTopicForDate}
-              isGenerating={isGenerating}
-              isAdmin={isAdmin}
-            />
+            <Tabs defaultValue="list" dir="rtl">
+              <TabsList className="w-full">
+                <TabsTrigger value="list" className="flex-1">قائمة</TabsTrigger>
+                <TabsTrigger value="daily" className="flex-1">يومي</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="list" className="mt-4">
+                <TopicsListView topics={publishedTopics} completedTopicIds={completedTopicIds} />
+              </TabsContent>
+
+              <TabsContent value="daily" className="mt-4">
+                <DailyReader
+                  topics={publishedTopics}
+                  completedTopicIds={completedTopicIds}
+                  isLoading={isLoading}
+                  onGenerateTopic={generateTopicForDate}
+                  isGenerating={isGenerating}
+                  isAdmin={isAdmin}
+                />
+              </TabsContent>
+            </Tabs>
           )}
         </div>
       </div>
