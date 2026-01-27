@@ -25,7 +25,7 @@ export function useDailyTopic() {
       }
 
       if (data.generated) {
-        toast.success('تم توليد موضوع جديد بنجاح!');
+        toast.success('تم توليد الموضوع كمسودة - راجعه ثم انشره من لوحة التحكم');
       } else if (data.topic) {
         toast.info('يوجد موضوع لهذا اليوم مسبقاً');
       }

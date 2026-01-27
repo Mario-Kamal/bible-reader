@@ -1,14 +1,18 @@
 import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useTopics, useUserProgress } from '@/hooks/useTopics';
 import { useDailyTopic } from '@/hooks/useDailyTopic';
 import { useAuth } from '@/contexts/AuthContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { DailyReader } from '@/components/daily/DailyReader';
-import { TopicsListView } from '@/components/topics/TopicsListView';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BookOpen, Calendar } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { startOfDay, isAfter } from 'date-fns';
+import { Card } from '@/components/ui/card';
+import { BookOpen, Calendar, ChevronLeft, Sparkles
+
+ } from 'lucide-react';
+import { startOfDay, isAfter, isSameDay } from 'date-fns';
+import { PointsBadge } from '@/components/ui/PointsBadge';
+import { cn } from '@/lib/utils';
 
 export default function Topics() {
   const { isAdmin } = useAuth();
@@ -18,13 +22,13 @@ export default function Topics() {
 
   const completedTopicIds = new Set(progress?.map(p => p.topic_id) || []);
   
+  const today = startOfDay(new Date());
+  
   // Filter published topics
   const publishedTopics = useMemo(() => {
-    const today = startOfDay(new Date());
     return topics?.filter(t => {
       if (!t.is_published) return false;
       if (!t.scheduled_for) return true;
-      // Date-only comparison so today's topics appear immediately.
       const scheduledDay = startOfDay(new Date(t.scheduled_for));
       return !isAfter(scheduledDay, today);
     }).sort((a, b) => {
@@ -33,7 +37,17 @@ export default function Topics() {
       if (!b.scheduled_for) return -1;
       return new Date(b.scheduled_for).getTime() - new Date(a.scheduled_for).getTime();
     }) || [];
-  }, [topics]);
+  }, [topics, today]);
+
+  // Find today's topic
+  const todaysTopic = useMemo(() => {
+    return publishedTopics.find(t => {
+      if (!t.scheduled_for) return false;
+      return isSameDay(startOfDay(new Date(t.scheduled_for)), today);
+    });
+  }, [publishedTopics, today]);
+
+  const isTodaysTopicCompleted = todaysTopic ? completedTopicIds.has(todaysTopic.id) : false;
 
   const isLoading = topicsLoading || progressLoading;
 
@@ -53,8 +67,46 @@ export default function Topics() {
           </div>
         </header>
 
-        {/* Topics List - Using DailyReader like Home page */}
-        <div className="px-4 py-6 max-w-lg mx-auto">
+        {/* Content */}
+        <div className="px-4 py-6 max-w-lg mx-auto space-y-6">
+          {/* Today's Topic Indicator */}
+          {!isLoading && todaysTopic && (
+            <Link to={`/topic/${todaysTopic.id}`}>
+              <Card className={cn(
+                "p-4 border-2 transition-all hover:shadow-lg",
+                isTodaysTopicCompleted 
+                  ? "border-success/50 bg-success/5" 
+                  : "border-primary/50 bg-primary/5"
+              )}>
+                <div className="flex items-center gap-4">
+                  <div className={cn(
+                    "w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0",
+                    isTodaysTopicCompleted ? "bg-success/20" : "bg-primary/20"
+                  )}>
+                    <Sparkles className={cn(
+                      "w-6 h-6",
+                      isTodaysTopicCompleted ? "text-success" : "text-primary"
+                    )} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-muted-foreground mb-0.5">
+                      {isTodaysTopicCompleted ? 'تم إكماله ✓' : 'موضوع اليوم'}
+                    </p>
+                    <h3 className="font-bold text-foreground truncate">{todaysTopic.title}</h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      <PointsBadge points={todaysTopic.points_reward} size="sm" />
+                      <span className="text-xs text-muted-foreground">
+                        {todaysTopic.verses?.length || 0} آية
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronLeft className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                </div>
+              </Card>
+            </Link>
+          )}
+
+          {/* Daily Reader */}
           {isLoading ? (
             <div className="space-y-3">
               {[1, 2, 3, 4, 5].map(i => (
@@ -70,27 +122,14 @@ export default function Topics() {
               </p>
             </div>
           ) : (
-            <Tabs defaultValue="list" dir="rtl">
-              <TabsList className="w-full">
-                <TabsTrigger value="list" className="flex-1">قائمة</TabsTrigger>
-                <TabsTrigger value="daily" className="flex-1">يومي</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="list" className="mt-4">
-                <TopicsListView topics={publishedTopics} completedTopicIds={completedTopicIds} />
-              </TabsContent>
-
-              <TabsContent value="daily" className="mt-4">
-                <DailyReader
-                  topics={publishedTopics}
-                  completedTopicIds={completedTopicIds}
-                  isLoading={isLoading}
-                  onGenerateTopic={generateTopicForDate}
-                  isGenerating={isGenerating}
-                  isAdmin={isAdmin}
-                />
-              </TabsContent>
-            </Tabs>
+            <DailyReader
+              topics={publishedTopics}
+              completedTopicIds={completedTopicIds}
+              isLoading={isLoading}
+              onGenerateTopic={generateTopicForDate}
+              isGenerating={isGenerating}
+              isAdmin={isAdmin}
+            />
           )}
         </div>
       </div>
