@@ -155,14 +155,14 @@ serve(async (req) => {
 
     const nextOrderIndex = (lastTopic?.order_index || 0) + 1;
 
-    // Insert the new topic
+    // Insert the new topic as DRAFT for admin review
     const { data: newTopic, error: insertError } = await supabase
       .from("topics")
       .insert({
         title: parsedTopic.title,
         description: parsedTopic.description,
         interpretation: parsedTopic.interpretation,
-        is_published: true,
+        is_published: false, // Save as draft for admin approval
         scheduled_for: startOfDay.toISOString(),
         order_index: nextOrderIndex,
         points_reward: 10,

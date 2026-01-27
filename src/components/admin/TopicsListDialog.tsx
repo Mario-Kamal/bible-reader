@@ -1,9 +1,10 @@
+import { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
-import { Calendar, BookOpen, Mic } from 'lucide-react';
+import { Calendar, BookOpen, Mic, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Topic {
   id: string;
@@ -22,10 +23,46 @@ interface TopicsListDialogProps {
   topics: Topic[];
 }
 
+const ITEMS_PER_PAGE = 10;
+
 export function TopicsListDialog({ open, onOpenChange, topics }: TopicsListDialogProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Sort topics by scheduled_for descending (newest first)
+  const sortedTopics = useMemo(() => {
+    return [...topics].sort((a, b) => {
+      if (!a.scheduled_for) return 1;
+      if (!b.scheduled_for) return -1;
+      return new Date(b.scheduled_for).getTime() - new Date(a.scheduled_for).getTime();
+    });
+  }, [topics]);
+
+  const totalPages = Math.ceil(sortedTopics.length / ITEMS_PER_PAGE);
+  
+  const paginatedTopics = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return sortedTopics.slice(start, start + ITEMS_PER_PAGE);
+  }, [sortedTopics, currentPage]);
+
+  const handlePrevPage = () => {
+    setCurrentPage(p => Math.max(1, p - 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage(p => Math.min(totalPages, p + 1));
+  };
+
+  // Reset page when dialog opens
+  const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen) {
+      setCurrentPage(1);
+    }
+    onOpenChange(newOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[80vh]" dir="rtl">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="max-w-lg max-h-[85vh] flex flex-col" dir="rtl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-primary" />
@@ -39,9 +76,9 @@ export function TopicsListDialog({ open, onOpenChange, topics }: TopicsListDialo
             لا يوجد مواضيع
           </div>
         ) : (
-          <ScrollArea className="h-[60vh] pr-4">
-            <div className="space-y-3">
-              {topics.map((topic) => (
+          <>
+            <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+              {paginatedTopics.map((topic) => (
                 <div 
                   key={topic.id} 
                   className="p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
@@ -86,7 +123,34 @@ export function TopicsListDialog({ open, onOpenChange, topics }: TopicsListDialo
                 </div>
               ))}
             </div>
-          </ScrollArea>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-4 border-t mt-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                  السابق
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  صفحة {currentPage} من {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                >
+                  التالي
+                  <ChevronLeft className="w-4 h-4 mr-1" />
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </DialogContent>
     </Dialog>
