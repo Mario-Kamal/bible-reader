@@ -17,7 +17,7 @@ export default function Home() {
   const { profile, isAdmin } = useAuth();
   const { data: topics, isLoading: topicsLoading } = useTopics();
   const { data: progress, isLoading: progressLoading } = useUserProgress();
-  const { generateTopicForDate, isGenerating } = useDailyTopic();
+  const { generateTopicForDate, isGenerating, generatedTopic, approveTopic, clearGeneratedTopic } = useDailyTopic();
   
   const completedTopicIds = new Set(progress?.map(p => p.topic_id) || []);
   
@@ -120,6 +120,10 @@ export default function Home() {
               onGenerateTopic={generateTopicForDate}
               isGenerating={isGenerating}
               isAdmin={isAdmin}
+              generatedTopic={generatedTopic}
+              onApproveTopic={(id) => approveTopic.mutate(id)}
+              isApproving={approveTopic.isPending}
+              onClearGeneratedTopic={clearGeneratedTopic}
             />
           </section>
 
