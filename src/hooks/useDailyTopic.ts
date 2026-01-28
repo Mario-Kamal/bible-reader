@@ -50,18 +50,39 @@ export function useDailyTopic() {
 
   const approveTopic = useMutation({
     mutationFn: async (topicId: string) => {
+      // First get the topic title
+      const { data: topicData } = await supabase
+        .from('topics')
+        .select('title')
+        .eq('id', topicId)
+        .single();
+
+      // Update to published
       const { error } = await supabase
         .from('topics')
         .update({ is_published: true })
         .eq('id', topicId);
       
       if (error) throw error;
+
+      // Send push notification to all subscribers
+      try {
+        await supabase.functions.invoke('send-push-notification', {
+          body: {
+            title: 'موضوع جديد 📖',
+            body: topicData?.title || 'موضوع جديد متاح للقراءة!',
+            topicId
+          }
+        });
+      } catch (notifError) {
+        console.log('Push notification sending failed (optional):', notifError);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['topics'] });
       queryClient.invalidateQueries({ queryKey: ['admin-topics'] });
       setGeneratedTopic(null);
-      toast.success('تم نشر الموضوع بنجاح!');
+      toast.success('تم نشر الموضوع وإرسال الإشعارات!');
     },
     onError: () => {
       toast.error('فشل في نشر الموضوع');

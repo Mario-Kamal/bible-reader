@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.evaluate-reading]
 verify_jwt = false
+
+[functions.get-daily-topic]
+verify_jwt = false
+
+[functions.send-push-notification]
+verify_jwt = false

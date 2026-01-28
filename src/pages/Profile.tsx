@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { PointsBadge } from '@/components/ui/PointsBadge';
-import { NotificationToggle } from '@/components/notifications/NotificationPrompt';
+import { PushNotificationToggle } from '@/components/notifications/PushNotificationToggle';
 import { EditProfileDialog } from '@/components/profile/EditProfileDialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
@@ -166,7 +166,7 @@ export default function Profile() {
                   <p className="text-xs text-muted-foreground">تذكير بموضوع القراءة الجديد</p>
                 </div>
               </div>
-              <NotificationToggle />
+              <PushNotificationToggle />
             </div>
           </Card>
         </div>
