@@ -2,13 +2,15 @@ import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { format, addDays, subDays, startOfDay, isSameDay, isAfter, isBefore } from 'date-fns';
 import { ar } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, BookOpen, Lock, Check, Calendar, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, BookOpen, Lock, Check, Calendar as CalendarIcon, Sparkles } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PointsBadge } from '@/components/ui/PointsBadge';
 import { cn } from '@/lib/utils';
 import { Topic } from '@/hooks/useTopics';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -53,6 +55,7 @@ export function DailyReader({
   const [selectedDate, setSelectedDate] = useState(today);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showGeneratedDialog, setShowGeneratedDialog] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
   
   // Generate last 7 days for the calendar strip
   const dateRange = useMemo(() => {
@@ -142,14 +145,34 @@ export function DailyReader({
           <ChevronRight className="w-5 h-5" />
         </Button>
         
-        <div className="text-center">
-          <h2 className="text-lg font-bold text-foreground">
-            {format(selectedDate, 'EEEE', { locale: ar })}
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            {format(selectedDate, 'd MMMM yyyy', { locale: ar })}
-          </p>
-        </div>
+        <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="ghost" className="flex flex-col h-auto py-1 px-3 hover:bg-muted">
+              <h2 className="text-lg font-bold text-foreground">
+                {format(selectedDate, 'EEEE', { locale: ar })}
+              </h2>
+              <p className="text-sm text-muted-foreground flex items-center gap-1">
+                <CalendarIcon className="w-3 h-3" />
+                {format(selectedDate, 'd MMMM yyyy', { locale: ar })}
+              </p>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="center">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={(date) => {
+                if (date) {
+                  setSelectedDate(startOfDay(date));
+                  setCalendarOpen(false);
+                }
+              }}
+              disabled={(date) => isAfter(startOfDay(date), today)}
+              defaultMonth={selectedDate}
+              locale={ar}
+            />
+          </PopoverContent>
+        </Popover>
         
         <Button
           variant="ghost"
@@ -264,8 +287,8 @@ export function DailyReader({
         </div>
       ) : (
         <Card className="p-6 text-center">
-          <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-            <Calendar className="w-7 h-7 text-muted-foreground" />
+        <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+            <CalendarIcon className="w-7 h-7 text-muted-foreground" />
           </div>
           <h3 className="font-semibold text-lg mb-2">لا يوجد موضوع لهذا اليوم</h3>
           <p className="text-muted-foreground text-sm mb-4">
