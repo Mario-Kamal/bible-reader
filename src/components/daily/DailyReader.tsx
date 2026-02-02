@@ -66,6 +66,13 @@ export function DailyReader({
     return dates;
   }, []);
 
+  // Get dates that have topics for calendar indicators
+  const datesWithTopics = useMemo(() => {
+    return topics
+      .filter(t => t.scheduled_for)
+      .map(t => startOfDay(new Date(t.scheduled_for!)));
+  }, [topics]);
+
   // Find ALL topics for selected date (could be multiple)
   const topicsForDate = useMemo(() => {
     return topics.filter(t => {
@@ -170,6 +177,12 @@ export function DailyReader({
               disabled={(date) => isAfter(startOfDay(date), today)}
               defaultMonth={selectedDate}
               locale={ar}
+              modifiers={{
+                hasTopic: datesWithTopics,
+              }}
+              modifiersClassNames={{
+                hasTopic: "relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:rounded-full after:bg-primary",
+              }}
             />
           </PopoverContent>
         </Popover>
