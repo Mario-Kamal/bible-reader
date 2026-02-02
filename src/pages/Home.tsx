@@ -4,6 +4,7 @@ import { useTopics, useUserProgress } from '@/hooks/useTopics';
 import { useDailyTopic } from '@/hooks/useDailyTopic';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { DailyReader } from '@/components/daily/DailyReader';
+import { DailyVerse } from '@/components/daily/DailyVerse';
 import { NotificationPrompt } from '@/components/notifications/NotificationPrompt';
 import { PointsBadge } from '@/components/ui/PointsBadge';
 import { ProgressRing } from '@/components/ui/ProgressRing';
@@ -85,6 +86,9 @@ export default function Home() {
 
         {/* Content */}
         <div className="px-4 pt-20 pb-6 max-w-lg mx-auto space-y-6">
+          {/* Daily Verse */}
+          <DailyVerse />
+
           {/* Notification Prompt */}
           <NotificationPrompt />
 
