@@ -33,8 +33,9 @@ export default function Home() {
       return !isAfter(scheduledDay, today);
     }) || [];
   
-  const totalTopics = publishedTopics.length;
-  const completedCount = publishedTopics.filter(t => completedTopicIds.has(t.id)).length;
+  // Use actual completed count from progress, not filtered by published topics
+  const completedCount = progress?.length || 0;
+  const totalTopics = topics?.length || 0;
   const progressPercent = totalTopics > 0 ? Math.round(completedCount / totalTopics * 100) : 0;
 
   const isLoading = topicsLoading || progressLoading;
