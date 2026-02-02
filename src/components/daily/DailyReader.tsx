@@ -73,6 +73,13 @@ export function DailyReader({
       .map(t => startOfDay(new Date(t.scheduled_for!)));
   }, [topics]);
 
+  // Get dates with completed topics
+  const completedDates = useMemo(() => {
+    return topics
+      .filter(t => t.scheduled_for && completedTopicIds.has(t.id))
+      .map(t => startOfDay(new Date(t.scheduled_for!)));
+  }, [topics, completedTopicIds]);
+
   // Find ALL topics for selected date (could be multiple)
   const topicsForDate = useMemo(() => {
     return topics.filter(t => {
@@ -179,9 +186,11 @@ export function DailyReader({
               locale={ar}
               modifiers={{
                 hasTopic: datesWithTopics,
+                completed: completedDates,
               }}
               modifiersClassNames={{
                 hasTopic: "relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:rounded-full after:bg-primary",
+                completed: "relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:rounded-full after:bg-success",
               }}
             />
           </PopoverContent>
