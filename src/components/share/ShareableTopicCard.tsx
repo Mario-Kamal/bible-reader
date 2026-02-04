@@ -81,8 +81,8 @@ export function ShareableTopicCard({ topic, trigger }: ShareableTopicCardProps) 
   const [open, setOpen] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState(themes[0]);
 
-  // Get the first verse for preview
-  const firstVerse = topic.verses?.sort((a, b) => a.order_index - b.order_index)[0];
+  // Sort all verses by order
+  const sortedVerses = topic.verses?.sort((a, b) => a.order_index - b.order_index) || [];
 
   const generateImage = async (): Promise<Blob | null> => {
     if (!cardRef.current) return null;
@@ -250,17 +250,19 @@ export function ShareableTopicCard({ topic, trigger }: ShareableTopicCardProps) 
                 </p>
               )}
               
-              {/* Featured Verse */}
-              {firstVerse && (
-                <div className={cn("rounded-xl p-4 mb-4", selectedTheme.accentBg)}>
-                  <p className="text-sm leading-relaxed font-serif mb-2" style={{ fontFamily: 'serif' }}>
-                    "{firstVerse.verse_text.length > 150 
-                      ? firstVerse.verse_text.slice(0, 150) + '...' 
-                      : firstVerse.verse_text}"
-                  </p>
-                  <p className={cn("text-xs font-medium", selectedTheme.accent)}>
-                    — {formatVerseReference(firstVerse)}
-                  </p>
+              {/* All Verses */}
+              {sortedVerses.length > 0 && (
+                <div className={cn("rounded-xl p-4 mb-4 space-y-4 max-h-64 overflow-y-auto", selectedTheme.accentBg)}>
+                  {sortedVerses.map((verse, index) => (
+                    <div key={verse.id} className="pb-3 last:pb-0 border-b last:border-b-0 border-white/10">
+                      <p className="text-sm leading-relaxed font-serif mb-1" style={{ fontFamily: 'serif' }}>
+                        "{verse.verse_text}"
+                      </p>
+                      <p className={cn("text-xs font-medium", selectedTheme.accent)}>
+                        — {formatVerseReference(verse)}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               )}
               
