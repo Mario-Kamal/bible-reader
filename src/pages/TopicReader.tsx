@@ -10,7 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AIReader } from '@/components/reader/AIReader';
 import { ReadingEvaluator } from '@/components/reader/ReadingEvaluator';
 import { ShareButton } from '@/components/share/ShareButton';
-import { ArrowRight, Check, BookOpen, Sparkles, Volume2, Mic } from 'lucide-react';
+import { ShareableTopicCard } from '@/components/share/ShareableTopicCard';
+import { ArrowRight, Check, BookOpen, Sparkles, Volume2, Mic, Image } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function TopicReader() {
@@ -106,6 +107,14 @@ export default function TopicReader() {
                 {sortedVerses.length} آية
               </p>
             </div>
+            <ShareableTopicCard 
+              topic={topic}
+              trigger={
+                <Button variant="ghost" size="icon">
+                  <Image className="w-5 h-5" />
+                </Button>
+              }
+            />
             <ShareButton
               title={topic.title}
               text={topic.description || 'موضوع من رحلة الكتاب المقدس'}
