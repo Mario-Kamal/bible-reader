@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
-import { Share2, Download, Sparkles, Check } from 'lucide-react';
+import { Share2, Download, Sparkles, Check, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -10,11 +10,12 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import type { DailyVerse } from '@/hooks/useDailyVerse';
 import { cn } from '@/lib/utils';
+import type { Topic, Verse } from '@/hooks/useTopics';
 
-interface ShareableVerseCardProps {
-  verse: DailyVerse;
+interface ShareableTopicCardProps {
+  topic: Topic;
+  trigger?: React.ReactNode;
 }
 
 const themes = [
@@ -74,11 +75,14 @@ const themes = [
   },
 ];
 
-export function ShareableVerseCard({ verse }: ShareableVerseCardProps) {
+export function ShareableTopicCard({ topic, trigger }: ShareableTopicCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [open, setOpen] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState(themes[0]);
+
+  // Get the first verse for preview
+  const firstVerse = topic.verses?.sort((a, b) => a.order_index - b.order_index)[0];
 
   const generateImage = async (): Promise<Blob | null> => {
     if (!cardRef.current) return null;
@@ -111,7 +115,7 @@ export function ShareableVerseCard({ verse }: ShareableVerseCardProps) {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `verse-${verse.verse_date}.png`;
+      link.download = `topic-${topic.id}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -132,12 +136,12 @@ export function ShareableVerseCard({ verse }: ShareableVerseCardProps) {
         return;
       }
 
-      const file = new File([blob], `verse-${verse.verse_date}.png`, { type: 'image/png' });
+      const file = new File([blob], `topic-${topic.id}.png`, { type: 'image/png' });
       
       if (navigator.share && navigator.canShare({ files: [file] })) {
         await navigator.share({
-          title: 'آية اليوم',
-          text: `"${verse.verse_text}" - ${verse.book} ${verse.chapter}:${verse.verse_number}`,
+          title: topic.title,
+          text: topic.description || topic.title,
           files: [file],
         });
       } else {
@@ -153,18 +157,28 @@ export function ShareableVerseCard({ verse }: ShareableVerseCardProps) {
     }
   };
 
+  const formatVerseReference = (verse: Verse) => {
+    if (verse.verse_end && verse.verse_end !== verse.verse_start) {
+      return `${verse.book} ${verse.chapter}:${verse.verse_start}-${verse.verse_end}`;
+    }
+    return `${verse.book} ${verse.chapter}:${verse.verse_start}`;
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <Share2 className="w-4 h-4" />
-        </Button>
+        {trigger || (
+          <Button variant="outline" size="sm" className="gap-2">
+            <Share2 className="w-4 h-4" />
+            مشاركة كصورة
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md p-0 overflow-hidden" dir="rtl">
         <DialogHeader className="p-4 pb-0">
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
-            مشاركة آية اليوم
+            مشاركة الموضوع
           </DialogTitle>
         </DialogHeader>
         
@@ -197,14 +211,15 @@ export function ShareableVerseCard({ verse }: ShareableVerseCardProps) {
             style={{ background: selectedTheme.gradient }}
           >
             {/* Decorative Elements */}
-            <div className="absolute top-0 right-0 w-32 h-32 opacity-10">
+            <div className="absolute top-0 right-0 w-40 h-40 opacity-10">
               <svg viewBox="0 0 100 100" className="w-full h-full fill-current text-white">
-                <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="0.5"/>
-                <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" strokeWidth="0.5"/>
-                <circle cx="50" cy="50" r="20" fill="none" stroke="currentColor" strokeWidth="0.5"/>
+                <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="0.3"/>
+                <circle cx="50" cy="50" r="35" fill="none" stroke="currentColor" strokeWidth="0.3"/>
+                <circle cx="50" cy="50" r="25" fill="none" stroke="currentColor" strokeWidth="0.3"/>
+                <circle cx="50" cy="50" r="15" fill="none" stroke="currentColor" strokeWidth="0.3"/>
               </svg>
             </div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 opacity-10">
+            <div className="absolute bottom-0 left-0 w-32 h-32 opacity-10">
               <svg viewBox="0 0 100 100" className={cn("w-full h-full fill-current", selectedTheme.accent)}>
                 <path d="M50 0 L60 40 L100 50 L60 60 L50 100 L40 60 L0 50 L40 40 Z" />
               </svg>
@@ -214,26 +229,48 @@ export function ShareableVerseCard({ verse }: ShareableVerseCardProps) {
             <div className={cn("relative z-10 p-6", selectedTheme.textColor)}>
               {/* Header */}
               <div className="flex items-center gap-2 mb-4">
-                <div className={cn("w-8 h-8 rounded-full flex items-center justify-center", selectedTheme.accentBg)}>
-                  <span className="text-lg">📖</span>
+                <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", selectedTheme.accentBg)}>
+                  <BookOpen className={cn("w-5 h-5", selectedTheme.accent)} />
                 </div>
-                <span className={cn("font-semibold text-sm", selectedTheme.accent)}>آية اليوم</span>
+                <div>
+                  <span className={cn("font-semibold text-xs block", selectedTheme.accent)}>موضوع اليوم</span>
+                  <span className={cn("text-xs", selectedTheme.subtleText)}>رحلة الكتاب المقدس</span>
+                </div>
               </div>
               
-              {/* Verse Text */}
-              <div className="mb-6">
-                <p className="text-lg leading-relaxed font-serif" style={{ fontFamily: 'serif' }}>
-                  "{verse.verse_text}"
+              {/* Topic Title */}
+              <h2 className="text-xl font-bold mb-3">
+                {topic.title}
+              </h2>
+
+              {/* Description */}
+              {topic.description && (
+                <p className={cn("text-sm leading-relaxed mb-4 line-clamp-2", selectedTheme.subtleText)}>
+                  {topic.description}
                 </p>
-              </div>
+              )}
               
-              {/* Reference */}
+              {/* Featured Verse */}
+              {firstVerse && (
+                <div className={cn("rounded-xl p-4 mb-4", selectedTheme.accentBg)}>
+                  <p className="text-sm leading-relaxed font-serif mb-2" style={{ fontFamily: 'serif' }}>
+                    "{firstVerse.verse_text.length > 150 
+                      ? firstVerse.verse_text.slice(0, 150) + '...' 
+                      : firstVerse.verse_text}"
+                  </p>
+                  <p className={cn("text-xs font-medium", selectedTheme.accent)}>
+                    — {formatVerseReference(firstVerse)}
+                  </p>
+                </div>
+              )}
+              
+              {/* Footer */}
               <div className="flex items-center justify-between">
-                <span className={cn("text-sm font-medium", selectedTheme.accent)}>
-                  — {verse.book} {verse.chapter}:{verse.verse_number}
-                </span>
+                <div className={cn("flex items-center gap-2 text-sm", selectedTheme.accent)}>
+                  <span>🏆</span>
+                  <span>{topic.points_reward} نقطة</span>
+                </div>
                 <div className={cn("flex items-center gap-1 text-xs", selectedTheme.subtleText)}>
-                  <span>رحلة الكتاب المقدس</span>
                   <span>✝️</span>
                 </div>
               </div>
