@@ -6,6 +6,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { DailyReader } from '@/components/daily/DailyReader';
 import { DailyVerse } from '@/components/daily/DailyVerse';
 import { NotificationPrompt } from '@/components/notifications/NotificationPrompt';
+import { InstallBanner } from '@/components/pwa/InstallBanner';
 import { PointsBadge } from '@/components/ui/PointsBadge';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { Card } from '@/components/ui/card';
@@ -88,6 +89,9 @@ export default function Home() {
         <div className="px-4 pt-20 pb-6 max-w-lg mx-auto space-y-6">
           {/* Daily Verse */}
           <DailyVerse />
+
+          {/* Install App Banner */}
+          <InstallBanner />
 
           {/* Notification Prompt */}
           <NotificationPrompt />
