@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { saveTopicsToCache, getTopicsFromCache, saveTopicToCache, getTopicFromCache, isOffline } from './useOfflineTopics';
 
 export interface Verse {
   id: string;
@@ -42,12 +43,25 @@ export function useTopics() {
   return useQuery({
     queryKey: ['topics'],
     queryFn: async () => {
+      if (isOffline()) {
+        const cached = getTopicsFromCache();
+        if (cached.length > 0) return cached;
+      }
+
       const { data, error } = await supabase
         .from('topics')
         .select('*, verses(*)')
         .order('order_index', { ascending: true });
       
-      if (error) throw error;
+      if (error) {
+        // Fallback to cache on network error
+        const cached = getTopicsFromCache();
+        if (cached.length > 0) return cached;
+        throw error;
+      }
+      
+      // Cache for offline use
+      saveTopicsToCache(data as Topic[]);
       return data as Topic[];
     },
   });
@@ -58,6 +72,11 @@ export function useTopic(topicId: string | undefined) {
     queryKey: ['topic', topicId],
     queryFn: async () => {
       if (!topicId) return null;
+
+      if (isOffline()) {
+        const cached = getTopicFromCache(topicId);
+        if (cached) return cached;
+      }
       
       const { data, error } = await supabase
         .from('topics')
@@ -65,7 +84,14 @@ export function useTopic(topicId: string | undefined) {
         .eq('id', topicId)
         .single();
       
-      if (error) throw error;
+      if (error) {
+        const cached = getTopicFromCache(topicId);
+        if (cached) return cached;
+        throw error;
+      }
+      
+      // Cache individual topic
+      saveTopicToCache(data as Topic);
       return data as Topic;
     },
     enabled: !!topicId,
