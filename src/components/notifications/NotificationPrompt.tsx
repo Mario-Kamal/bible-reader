@@ -2,88 +2,16 @@ import { useState, useEffect } from 'react';
 import { Bell, BellOff, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { toast } from 'sonner';
-
-const NOTIFICATION_KEY = 'daily-reading-notifications';
-
-export function useNotifications() {
-  const [isEnabled, setIsEnabled] = useState(false);
-  const [permission, setPermission] = useState<NotificationPermission>('default');
-
-  useEffect(() => {
-    // Check if notifications are supported
-    if ('Notification' in window) {
-      setPermission(Notification.permission);
-      const saved = localStorage.getItem(NOTIFICATION_KEY);
-      setIsEnabled(saved === 'true' && Notification.permission === 'granted');
-    }
-  }, []);
-
-  const requestPermission = async () => {
-    if (!('Notification' in window)) {
-      toast.error('الإشعارات غير مدعومة في هذا المتصفح');
-      return false;
-    }
-
-    try {
-      const result = await Notification.requestPermission();
-      setPermission(result);
-      
-      if (result === 'granted') {
-        setIsEnabled(true);
-        localStorage.setItem(NOTIFICATION_KEY, 'true');
-        toast.success('تم تفعيل الإشعارات اليومية');
-        
-        // Show a test notification
-        new Notification('رحلة الكتاب المقدس 📖', {
-          body: 'تم تفعيل الإشعارات! ستتلقى تذكيراً يومياً بالموضوع الجديد.',
-          icon: '/favicon.png',
-          tag: 'welcome',
-        });
-        
-        return true;
-      } else {
-        toast.error('تم رفض الإشعارات');
-        return false;
-      }
-    } catch (error) {
-      console.error('Notification error:', error);
-      toast.error('فشل في تفعيل الإشعارات');
-      return false;
-    }
-  };
-
-  const disableNotifications = () => {
-    setIsEnabled(false);
-    localStorage.setItem(NOTIFICATION_KEY, 'false');
-    toast.success('تم إيقاف الإشعارات');
-  };
-
-  const showNotification = (title: string, body: string) => {
-    if (isEnabled && permission === 'granted') {
-      new Notification(title, {
-        body,
-        icon: '/favicon.png',
-        tag: 'daily-topic',
-      });
-    }
-  };
-
-  return {
-    isEnabled,
-    permission,
-    requestPermission,
-    disableNotifications,
-    showNotification,
-  };
-}
+import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface NotificationPromptProps {
   onClose?: () => void;
 }
 
 export function NotificationPrompt({ onClose }: NotificationPromptProps) {
-  const { isEnabled, permission, requestPermission, disableNotifications } = useNotifications();
+  const { user } = useAuth();
+  const { isSupported, isSubscribed, permission, isLoading, subscribe } = usePushNotifications();
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
@@ -91,7 +19,8 @@ export function NotificationPrompt({ onClose }: NotificationPromptProps) {
     setDismissed(wasDismissed === 'true');
   }, []);
 
-  if (dismissed || isEnabled || permission === 'denied') {
+  // Don't show if: not supported, no user, already subscribed, dismissed, or denied
+  if (!isSupported || !user || dismissed || isSubscribed || permission === 'denied') {
     return null;
   }
 
@@ -102,7 +31,7 @@ export function NotificationPrompt({ onClose }: NotificationPromptProps) {
   };
 
   const handleEnable = async () => {
-    const success = await requestPermission();
+    const success = await subscribe();
     if (success) {
       onClose?.();
     }
@@ -124,14 +53,14 @@ export function NotificationPrompt({ onClose }: NotificationPromptProps) {
           <Bell className="w-5 h-5 text-primary" />
         </div>
         <div className="flex-1">
-          <h3 className="font-semibold text-sm mb-1">تفعيل الإشعارات اليومية</h3>
+          <h3 className="font-semibold text-sm mb-1">تفعيل إشعارات Push</h3>
           <p className="text-xs text-muted-foreground mb-3">
-            احصل على تذكير يومي بموضوع القراءة الجديد
+            احصل على إشعار فوري عند نشر موضوع جديد
           </p>
           <div className="flex gap-2">
-            <Button size="sm" onClick={handleEnable} className="gap-1">
+            <Button size="sm" onClick={handleEnable} disabled={isLoading} className="gap-1">
               <Bell className="w-3 h-3" />
-              تفعيل
+              {isLoading ? 'جاري التفعيل...' : 'تفعيل'}
             </Button>
             <Button size="sm" variant="ghost" onClick={handleDismiss}>
               لاحقاً
@@ -140,52 +69,5 @@ export function NotificationPrompt({ onClose }: NotificationPromptProps) {
         </div>
       </div>
     </Card>
-  );
-}
-
-interface NotificationToggleProps {
-  className?: string;
-}
-
-export function NotificationToggle({ className }: NotificationToggleProps) {
-  const { isEnabled, permission, requestPermission, disableNotifications } = useNotifications();
-
-  if (!('Notification' in window)) {
-    return null;
-  }
-
-  const handleToggle = async () => {
-    if (isEnabled) {
-      disableNotifications();
-    } else {
-      await requestPermission();
-    }
-  };
-
-  return (
-    <Button
-      variant={isEnabled ? "default" : "outline"}
-      size="sm"
-      onClick={handleToggle}
-      className={className}
-      disabled={permission === 'denied'}
-    >
-      {isEnabled ? (
-        <>
-          <Bell className="w-4 h-4 ml-2" />
-          الإشعارات مفعلة
-        </>
-      ) : permission === 'denied' ? (
-        <>
-          <BellOff className="w-4 h-4 ml-2" />
-          الإشعارات محظورة
-        </>
-      ) : (
-        <>
-          <BellOff className="w-4 h-4 ml-2" />
-          تفعيل الإشعارات
-        </>
-      )}
-    </Button>
   );
 }
