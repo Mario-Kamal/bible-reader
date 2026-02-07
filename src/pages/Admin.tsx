@@ -14,6 +14,7 @@ import { AITopicGenerator } from '@/components/admin/AITopicGenerator';
 import { TopicsList } from '@/components/admin/TopicsList';
 import { UsersListDialog } from '@/components/admin/UsersListDialog';
 import { TopicsListDialog } from '@/components/admin/TopicsListDialog';
+import { TestNotificationButton } from '@/components/admin/TestNotificationButton';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -297,6 +298,11 @@ export default function Admin() {
             onActiveUsersClick={() => setShowActiveUsersDialog(true)}
             onTopicsClick={() => setShowTopicsDialog(true)}
           />
+
+          {/* Test Notification */}
+          <div className="flex justify-end">
+            <TestNotificationButton />
+          </div>
 
           {/* Add Topic Options */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
