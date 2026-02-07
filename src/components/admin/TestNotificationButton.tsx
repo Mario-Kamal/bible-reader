@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Bell, Loader2, CheckCircle } from 'lucide-react';
+import { Bell, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -10,6 +10,16 @@ export function TestNotificationButton() {
   const sendTestNotification = async () => {
     setIsSending(true);
     try {
+      // First check how many subscriptions exist
+      const { count } = await supabase
+        .from('push_subscriptions')
+        .select('*', { count: 'exact', head: true });
+
+      if (!count || count === 0) {
+        toast.warning('لا يوجد مشتركين! اذهب للصفحة الرئيسية واضغط "تفعيل إشعارات Push" أولاً');
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('send-push-notification', {
         body: {
           title: '🔔 إشعار تجريبي',
@@ -21,10 +31,8 @@ export function TestNotificationButton() {
 
       if (data?.sent > 0) {
         toast.success(`تم إرسال الإشعار إلى ${data.sent} مشترك من أصل ${data.total}`);
-      } else if (data?.total === 0) {
-        toast.warning('لا يوجد مشتركين في الإشعارات حالياً');
       } else {
-        toast.info('تم إرسال الطلب ولكن لم يصل لأي مشترك');
+        toast.error(`فشل الإرسال - ${data?.total || 0} مشترك موجود لكن لم يصل لأحد`);
       }
     } catch (error) {
       console.error('Test notification error:', error);
