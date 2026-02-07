@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 const PUSH_SUBSCRIPTION_KEY = 'push-notification-subscribed';
 
 // VAPID public key - in production, this should come from environment
-const VAPID_PUBLIC_KEY = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U';
+const VAPID_PUBLIC_KEY = 'BM7AvyIGYrZR8m-8p8uwp7fdu1keSK7IobRMiNPJCMbZf1nAe56Xu5zGLFl2YJHYEVwhPApY_ykXNXGd5aGSpyc';
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
