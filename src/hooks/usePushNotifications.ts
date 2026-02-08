@@ -31,18 +31,32 @@ export function usePushNotifications() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Check if push notifications are supported
     const supported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
     setIsSupported(supported);
 
     if (supported) {
       setPermission(Notification.permission);
       
-      // Check if already subscribed
-      const wasSubscribed = localStorage.getItem(PUSH_SUBSCRIPTION_KEY);
-      if (wasSubscribed === 'true' && Notification.permission === 'granted') {
-        setIsSubscribed(true);
-      }
+      // Verify actual push subscription exists (not just localStorage flag)
+      const checkSubscription = async () => {
+        try {
+          const reg = await navigator.serviceWorker.getRegistration();
+          const sub = reg ? await reg.pushManager.getSubscription() : null;
+          if (sub) {
+            setIsSubscribed(true);
+            localStorage.setItem(PUSH_SUBSCRIPTION_KEY, 'true');
+          } else {
+            // No active subscription - reset state
+            setIsSubscribed(false);
+            localStorage.removeItem(PUSH_SUBSCRIPTION_KEY);
+            localStorage.removeItem('notification-prompt-dismissed');
+          }
+        } catch {
+          setIsSubscribed(false);
+          localStorage.removeItem(PUSH_SUBSCRIPTION_KEY);
+        }
+      };
+      checkSubscription();
     }
   }, []);
 
