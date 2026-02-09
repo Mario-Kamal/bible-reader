@@ -251,7 +251,7 @@ export function DailyReader({
       ) : isFutureDate ? (
         <Card className="p-6 text-center opacity-60">
           <Lock className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-          <h3 className="font-semibold text-lg mb-1">موضوع الغد</h3>
+          <h3 className="font-semibold text-lg mb-1">نبوة الغد</h3>
           <p className="text-muted-foreground text-sm">
             عُد غداً لقراءة موضوع جديد!
           </p>
@@ -312,9 +312,9 @@ export function DailyReader({
         <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
             <CalendarIcon className="w-7 h-7 text-muted-foreground" />
           </div>
-          <h3 className="font-semibold text-lg mb-2">لا يوجد موضوع لهذا اليوم</h3>
+          <h3 className="font-semibold text-lg mb-2">لا توجد نبوة لهذا اليوم</h3>
           <p className="text-muted-foreground text-sm mb-4">
-            {isAdmin ? 'يمكنك توليد موضوع تلقائي لهذا اليوم' : 'لم يتم إضافة موضوع لهذا اليوم بعد'}
+            {isAdmin ? 'يمكنك توليد نبوة تلقائية لهذا اليوم' : 'لم يتم إضافة نبوة لهذا اليوم بعد'}
           </p>
           {isAdmin && onGenerateTopic && (
             <Button
@@ -323,7 +323,7 @@ export function DailyReader({
               className="gap-2"
             >
               <Sparkles className="w-4 h-4" />
-              {isGenerating ? 'جاري التوليد...' : 'توليد موضوع تلقائي'}
+              {isGenerating ? 'جاري التوليد...' : 'توليد نبوة تلقائية'}
             </Button>
           )}
         </Card>
@@ -333,7 +333,7 @@ export function DailyReader({
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent dir="rtl">
           <AlertDialogHeader>
-            <AlertDialogTitle>تأكيد توليد موضوع</AlertDialogTitle>
+            <AlertDialogTitle>تأكيد توليد نبوة</AlertDialogTitle>
             <AlertDialogDescription className="text-right">
               هل تريد توليد موضوع جديد ليوم{' '}
               <span className="font-bold text-foreground">
@@ -344,7 +344,7 @@ export function DailyReader({
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-row-reverse gap-2">
             <AlertDialogAction onClick={handleConfirmGenerate}>
-              نعم، توليد الموضوع
+              نعم، توليد النبوة
             </AlertDialogAction>
             <AlertDialogCancel>إلغاء</AlertDialogCancel>
           </AlertDialogFooter>
@@ -369,7 +369,7 @@ export function DailyReader({
             <Sparkles className="w-5 h-5 text-accent" />
           </div>
           <div>
-            <p className="text-sm font-medium text-foreground">موضوع اليوم</p>
+            <p className="text-sm font-medium text-foreground">نبوة اليوم</p>
             <p className="text-xs text-muted-foreground">
               اقرأ واحصل على {topicsForDate[0].points_reward} نقطة!
             </p>

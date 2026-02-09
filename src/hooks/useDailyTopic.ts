@@ -29,9 +29,9 @@ export function useDailyTopic() {
       if (data.generated && data.topic) {
         // Store the generated topic for review
         setGeneratedTopic(data.topic);
-        toast.success('تم توليد الموضوع - راجعه ثم وافق أو عدّل');
+        toast.success('تم توليد النبوة - راجعها ثم وافق أو عدّل');
       } else if (data.topic && !data.generated) {
-        toast.info('يوجد موضوع لهذا اليوم مسبقاً');
+        toast.info('توجد نبوة لهذا اليوم مسبقاً');
       }
 
       // Refresh topics list from all queries
@@ -41,7 +41,7 @@ export function useDailyTopic() {
       return data.topic;
     } catch (error) {
       console.error('Error generating topic:', error);
-      toast.error('فشل في توليد الموضوع');
+      toast.error('فشل في توليد النبوة');
       return null;
     } finally {
       setIsGenerating(false);
@@ -69,8 +69,8 @@ export function useDailyTopic() {
       try {
         await supabase.functions.invoke('send-push-notification', {
           body: {
-            title: 'موضوع جديد 📖',
-            body: topicData?.title || 'موضوع جديد متاح للقراءة!',
+            title: '✝️ نبوة جديدة',
+            body: topicData?.title || 'نبوة جديدة متاحة للقراءة!',
             topicId
           }
         });
@@ -82,10 +82,10 @@ export function useDailyTopic() {
       queryClient.invalidateQueries({ queryKey: ['topics'] });
       queryClient.invalidateQueries({ queryKey: ['admin-topics'] });
       setGeneratedTopic(null);
-      toast.success('تم نشر الموضوع وإرسال الإشعارات!');
+      toast.success('تم نشر النبوة وإرسال الإشعارات!');
     },
     onError: () => {
-      toast.error('فشل في نشر الموضوع');
+      toast.error('فشل في نشر النبوة');
     },
   });
 

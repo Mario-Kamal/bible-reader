@@ -67,7 +67,7 @@ export default function Home() {
                 <div className="flex-1">
                   <h2 className="font-semibold text-foreground mb-1">رحلتك</h2>
                   <p className="text-sm text-muted-foreground mb-2">
-                    {completedCount} من {totalTopics} موضوع مكتمل
+                    {completedCount} من {totalTopics} نبوة مكتملة
                   </p>
                   <div className="flex items-center gap-3 text-sm">
                     <div className="flex items-center gap-1 text-accent">
@@ -144,7 +144,7 @@ export default function Home() {
                 <div className="text-3xl font-bold text-primary mb-1">
                   {profile?.topics_completed || 0}
                 </div>
-                <div className="text-sm text-muted-foreground">موضوع مقروء</div>
+                <div className="text-sm text-muted-foreground">نبوة مقروءة</div>
               </Card>
               <Card className="p-4 text-center">
                 <div className="text-3xl font-bold text-gradient-gold mb-1">
@@ -158,7 +158,7 @@ export default function Home() {
           {/* View All Topics */}
           <Link to="/topics">
             <Button variant="outline" className="w-full">
-              عرض جميع المواضيع
+              عرض جميع النبوات
               <ChevronLeft className="w-4 h-4 mr-1" />
             </Button>
           </Link>
