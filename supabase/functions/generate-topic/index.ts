@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 serve(async (req) => {
@@ -13,63 +13,75 @@ serve(async (req) => {
   try {
     const { topicTitle } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    
+
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = `أنت عالم لاهوتي متخصص في الكتاب المقدس. مهمتك هي إنشاء محتوى تعليمي عن مواضيع الإنجيل.
+    const systemPrompt = `أنت عالم لاهوتي قبطي أرثوذكسي متخصص في نبوات العهد القديم عن المسيح.
+مهمتك: إنشاء محتوى عن نبوة مسيانية بأسلوب تفاسير موقع الأنبا تكلا هيمانوت.
 
-عندما يُعطى لك موضوع، يجب أن:
-1. تجد الآيات المتعلقة من الأناجيل الأربعة (متى، مرقس، لوقا، يوحنا) وباقي الكتاب المقدس
-2. تكتب كل آية بالنص الكامل بالعربية
-3. تضيف تفسيراً روحياً واضحاً
+عند إعطائك نبوة أو موضوع:
+1. اكتب آية أو آيتين من العهد القديم (النبوة) بالنص الكامل (ترجمة فاندايك)
+2. اكتب آية أو آيتين من العهد الجديد (التحقيق) بالنص الكامل
+3. اكتب تفسيراً روحياً أرثوذكسياً يناسب الصوم الكبير (3-5 فقرات)
+   - اشرح النبوة وكيف تحققت في المسيح
+   - اذكر تعليقات آباء الكنيسة إن أمكن
 
-أجب بصيغة JSON فقط بالشكل التالي:
+أجب بصيغة JSON:
 {
-  "title": "عنوان الموضوع بالعربية",
-  "description": "وصف مختصر للموضوع",
-  "interpretation": "التفسير الروحي والتأمل في الموضوع",
+  "title": "عنوان النبوة",
+  "description": "وصف مختصر",
+  "interpretation": "التفسير الروحي...",
   "verses": [
     {
       "book": "اسم السفر",
       "chapter": رقم الإصحاح,
-      "verse_start": رقم بداية الآية,
-      "verse_end": رقم نهاية الآية أو null إذا آية واحدة,
-      "verse_text": "نص الآية الكامل بالعربية"
+      "verse_start": رقم الآية,
+      "verse_end": null أو رقم,
+      "verse_text": "نص الآية الكامل"
     }
   ]
 }
 
-مهم جداً: أعطِ 4-8 آيات متنوعة من أسفار مختلفة. اكتب النص بالعربية الفصحى.`;
+ضع آيات العهد القديم أولاً ثم العهد الجديد. 2-4 آيات إجمالاً.`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: `أريد موضوعاً عن: ${topicTitle}` },
-        ],
-      }),
-    });
+    const response = await fetch(
+      "https://ai.gateway.lovable.dev/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: `أريد نبوة عن: ${topicTitle}` },
+          ],
+        }),
+      }
+    );
 
     if (!response.ok) {
       if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "تم تجاوز الحد المسموح، حاول لاحقاً" }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return new Response(
+          JSON.stringify({ error: "تم تجاوز الحد المسموح، حاول لاحقاً" }),
+          {
+            status: 429,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
       }
       if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "يرجى إضافة رصيد للاستمرار" }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return new Response(
+          JSON.stringify({ error: "يرجى إضافة رصيد للاستمرار" }),
+          {
+            status: 402,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
       }
       const errorText = await response.text();
       console.error("AI gateway error:", response.status, errorText);
@@ -78,18 +90,17 @@ serve(async (req) => {
 
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content;
-    
+
     if (!content) {
       throw new Error("No content in response");
     }
 
-    // Extract JSON from response (might be wrapped in markdown code blocks)
     let jsonContent = content;
     const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
     if (jsonMatch) {
       jsonContent = jsonMatch[1];
     }
-    
+
     const parsedTopic = JSON.parse(jsonContent.trim());
 
     return new Response(JSON.stringify(parsedTopic), {
@@ -98,8 +109,13 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error generating topic:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "حدث خطأ" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({
+        error: error instanceof Error ? error.message : "حدث خطأ",
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
     );
   }
 });

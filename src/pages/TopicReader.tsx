@@ -59,8 +59,8 @@ export default function TopicReader() {
         <div className="min-h-screen flex items-center justify-center" dir="rtl">
           <div className="text-center">
             <BookOpen className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <h2 className="text-xl font-semibold mb-2">الموضوع غير موجود</h2>
-            <Button onClick={() => navigate('/topics')}>العودة للمواضيع</Button>
+            <h2 className="text-xl font-semibold mb-2">النبوة غير موجودة</h2>
+            <Button onClick={() => navigate('/topics')}>العودة للنبوات</Button>
           </div>
         </div>
       </AppLayout>

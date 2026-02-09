@@ -59,10 +59,10 @@ export default function Topics() {
           <div className="max-w-lg mx-auto">
             <div className="flex items-center gap-3 mb-2">
               <Calendar className="w-6 h-6" />
-              <h1 className="text-2xl font-bold">القراءة اليومية</h1>
+              <h1 className="text-2xl font-bold">نبوات الصوم الكبير</h1>
             </div>
             <p className="text-primary-foreground/70">
-              {publishedTopics.length} موضوع • {completedTopicIds.size} مكتمل
+              {publishedTopics.length} نبوة • {completedTopicIds.size} مكتمل
             </p>
           </div>
         </header>
@@ -90,7 +90,7 @@ export default function Topics() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-muted-foreground mb-0.5">
-                      {isTodaysTopicCompleted ? 'تم إكماله ✓' : 'موضوع اليوم'}
+                      {isTodaysTopicCompleted ? 'تم إكمالها ✓' : 'نبوة اليوم'}
                     </p>
                     <h3 className="font-bold text-foreground truncate">{todaysTopic.title}</h3>
                     <div className="flex items-center gap-2 mt-1">
@@ -116,7 +116,7 @@ export default function Topics() {
           ) : publishedTopics.length === 0 ? (
             <div className="text-center py-12">
               <BookOpen className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">لا توجد مواضيع بعد</h3>
+              <h3 className="text-lg font-semibold mb-2">لا توجد نبوات بعد</h3>
               <p className="text-muted-foreground">
                 عُد قريباً لمحتوى جديد!
               </p>
