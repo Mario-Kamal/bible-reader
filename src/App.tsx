@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { useAutoUpdate } from "@/hooks/useAutoUpdate";
 import Auth from "./pages/Auth";
 import Home from "./pages/Home";
 import Topics from "./pages/Topics";
@@ -66,6 +67,13 @@ const AppRoutes = () => (
   </Routes>
 );
 
+const AppWithAutoUpdate = () => {
+  // تفعيل التحديثات التلقائية
+  useAutoUpdate();
+
+  return <AppRoutes />;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -73,7 +81,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <AppRoutes />
+          <AppWithAutoUpdate />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

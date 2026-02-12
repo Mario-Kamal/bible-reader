@@ -1,0 +1,51 @@
+name: Update App Version on Publish
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'package.json'
+      - '.github/workflows/update-version.yml'
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Update version.json
+        run: |
+          TIMESTAMP=$(date +%s)000
+          GIT_HASH="${{ github.sha }}"
+          
+          cat > public/version.json << EOF
+          {
+            "version": "${{ github.run_number }}",
+            "timestamp": ${TIMESTAMP},
+            "buildHash": "${GIT_HASH:0:8}"
+          }
+          EOF
+          
+          echo "Updated version.json:"
+          cat public/version.json
+          
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add public/version.json
+          git diff --staged
+          git commit -m "chore: update app version to ${{ github.run_number }}" || echo "No changes to commit"
+          git push origin main || echo "Nothing to push"
+
