@@ -54,12 +54,7 @@ export default function Auth() {
     setIsLoading(false);
 
     if (error) {
-      console.error('Login error:', error);
-      if (error.message.includes('Email not confirmed')) {
-        toast.error('يرجى تعطيل "Email Confirmation" في إعدادات Supabase Authentication');
-      } else {
-        toast.error('رقم الهاتف أو كلمة المرور غير صحيحة');
-      }
+      toast.error('رقم الهاتف أو كلمة المرور غير صحيحة');
     } else {
       toast.success('أهلاً بعودتك!');
       navigate('/home');
@@ -85,11 +80,10 @@ export default function Auth() {
     setIsLoading(false);
 
     if (error) {
-      console.error('Signup error:', error);
       if (error.message.includes('already registered')) {
         toast.error('رقم الهاتف مسجل مسبقاً');
       } else {
-        toast.error(`فشل في إنشاء الحساب: ${error.message}`);
+        toast.error('فشل في إنشاء الحساب. حاول مرة أخرى.');
       }
     } else {
       toast.success('تم إنشاء الحساب! أهلاً بك في رحلة الكتاب المقدس!');
