@@ -54,7 +54,14 @@ async function createVapidJwt(
   const pubBytes = base64urlDecode(vapidPublicKey);
   const x = base64urlEncode(pubBytes.slice(1, 33));
   const y = base64urlEncode(pubBytes.slice(33, 65));
-  const d = vapidPrivateKey; // already base64url
+  
+  // التأكد من أن private key له padding صحيح
+  let d = vapidPrivateKey;
+  // لو private key مش بالطول المناسب، نضيف padding
+  if (d.length % 4 !== 0) {
+    d += "=".repeat(4 - (d.length % 4));
+  }
+  d = d.replace(/-/g, "+").replace(/_/g, "/");
 
   const key = await crypto.subtle.importKey(
     "jwk",
@@ -200,14 +207,24 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const vapidPublicKey = Deno.env.get("VAPID_PUBLIC_KEY");
-    const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY");
+    
+    // 👇 تم تحديث المفاتيح هنا مباشرة (بدون الاعتماد على Environment Variables)
+    const vapidPublicKey = "BPsBdOkkJ1BwPD-MLfcR3p_OY9rXj6Nck2srcBU0lwn4pjGIq1b_3KQa3ZdJURhX569yYwUuNFsFlfAu-CK-ACc";
+    const vapidPrivateKey = "fboyqe6EFAH6p_5NIPdR-6nN6yd2m7d4IMklzkbZ6wA";
 
-    if (!vapidPublicKey || !vapidPrivateKey) {
-      console.log("VAPID keys not configured");
+    // اختبار المفاتيح قبل البدء
+    try {
+      const testJwt = await createVapidJwt("https://test.com", vapidPublicKey, vapidPrivateKey);
+      console.log("✅ VAPID keys are valid");
+    } catch (keyError) {
+      console.error("❌ VAPID keys are invalid:", keyError);
       return new Response(
-        JSON.stringify({ success: true, message: "VAPID keys not configured", sent: 0 }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        JSON.stringify({ 
+          success: false, 
+          error: "VAPID keys are invalid - please check the keys format",
+          details: keyError instanceof Error ? keyError.message : String(keyError)
+        }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -265,24 +282,24 @@ serve(async (req) => {
 
         if (response.ok || response.status === 201) {
           successCount++;
-          console.log("Notification sent to:", sub.endpoint.substring(0, 60));
+          console.log("✅ Notification sent to:", sub.endpoint.substring(0, 60));
         } else {
           const errText = await response.text();
-          console.error(`Push failed (${response.status}):`, errText);
-          if (response.status === 410 || response.status === 404) {
+          console.error(`❌ Push failed (${response.status}):`, errText);
+          if (response.status === 410 || response.status === 404 || response.status === 403 || response.status === 400) {
             failedSubscriptions.push(sub.id);
           }
         }
       } catch (error: unknown) {
         const msg = error instanceof Error ? error.message : String(error);
-        console.error("Failed to send to subscription:", msg);
+        console.error("❌ Failed to send to subscription:", msg);
       }
     }
 
     // Clean up expired/invalid subscriptions
     if (failedSubscriptions.length > 0) {
       await supabase.from("push_subscriptions").delete().in("id", failedSubscriptions);
-      console.log("Cleaned up", failedSubscriptions.length, "invalid subscriptions");
+      console.log("🧹 Cleaned up", failedSubscriptions.length, "invalid subscriptions");
     }
 
     return new Response(
@@ -295,7 +312,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (error) {
-    console.error("Error in send-push-notification:", error);
+    console.error("❌ Error in send-push-notification:", error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : "حدث خطأ" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
