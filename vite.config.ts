@@ -18,6 +18,8 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
+      strategies: "generateSW",
+      filename: "pwa-sw.js",
       includeAssets: ["favicon.png", "favicon.ico", "robots.txt"],
       manifest: {
         name: "رحلة الكتاب المقدس",
