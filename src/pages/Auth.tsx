@@ -54,7 +54,14 @@ export default function Auth() {
     setIsLoading(false);
 
     if (error) {
-      toast.error('رقم الهاتف أو كلمة المرور غير صحيحة');
+      console.error('Sign in error:', error);
+      if (error.message.includes('Invalid login credentials')) {
+        toast.error('رقم الهاتف أو كلمة المرور غير صحيحة');
+      } else if (error.message.includes('Email not confirmed')) {
+        toast.error('يرجى تأكيد الحساب أولاً');
+      } else {
+        toast.error(error.message);
+      }
     } else {
       toast.success('أهلاً بعودتك!');
       navigate('/home');
