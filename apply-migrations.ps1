@@ -3,8 +3,8 @@
 
 param(
     [Parameter(Mandatory=$true)]
-    [string]$ServiceRoleKey,
-    [string]$ProjectUrl = "https://zgexnqpeywpsbrkrfrsu.supabase.co"
+    [string]$ServiceRoleKey = $env:SUPABASE_SERVICE_ROLE_KEY,
+    [string]$ProjectUrl = if ($env:SUPABASE_URL) { $env:SUPABASE_URL } else { "https://zgexnqpeywpsbrkrfrsu.supabase.co" }
 )
 
 $migrations = @(
