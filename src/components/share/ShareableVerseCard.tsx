@@ -137,7 +137,7 @@ export function ShareableVerseCard({ verse }: ShareableVerseCardProps) {
       if (navigator.share && navigator.canShare({ files: [file] })) {
         await navigator.share({
           title: 'آية اليوم',
-          text: `"${verse.verse_text}" - ${verse.book} ${verse.chapter}:${verse.verse_number}`,
+          text: `"${verse.verse_text}" (${verse.book} ${verse.chapter}: ${verse.verse_number})`,
           files: [file],
         });
       } else {
@@ -230,7 +230,7 @@ export function ShareableVerseCard({ verse }: ShareableVerseCardProps) {
               {/* Reference */}
               <div className="flex items-center justify-between">
                 <span className={cn("text-sm font-medium", selectedTheme.accent)}>
-                  — {verse.book} <span dir="ltr">{verse.chapter}:{verse.verse_number}</span>
+                  ({verse.book} {verse.chapter}: {verse.verse_number})
                 </span>
                 <div className={cn("flex items-center gap-1 text-xs", selectedTheme.subtleText)}>
                   <span>رحلة الكتاب المقدس</span>

@@ -98,11 +98,8 @@ export function GeneratedTopicDialog({
                     <div key={verse.id || idx} className="p-3 bg-muted/50 rounded-lg">
                       <p className="text-sm leading-relaxed">{verse.verse_text}</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {verse.book}{' '}
-                        <span dir="ltr">
-                          {verse.chapter}:{verse.verse_start}
-                          {verse.verse_end && `-${verse.verse_end}`}
-                        </span>
+                        ({verse.book} {verse.chapter}: {verse.verse_start}
+                        {verse.verse_end && `-${verse.verse_end}`})
                       </p>
                     </div>
                   ))}

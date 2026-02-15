@@ -160,11 +160,8 @@ export function ShareableTopicCard({ topic, trigger }: ShareableTopicCardProps) 
   const renderVerseReference = (verse: Verse) => {
     return (
       <>
-        {verse.book}{' '}
-        <span dir="ltr">
-          {verse.chapter}:{verse.verse_start}
-          {verse.verse_end && verse.verse_end !== verse.verse_start && `-${verse.verse_end}`}
-        </span>
+        ({verse.book} {verse.chapter}: {verse.verse_start}
+        {verse.verse_end && verse.verse_end !== verse.verse_start && `-${verse.verse_end}`})
       </>
     );
   };

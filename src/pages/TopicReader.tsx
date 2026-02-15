@@ -175,11 +175,8 @@ export default function TopicReader() {
                           {index + 1}
                         </div>
                         <div className="text-sm font-medium text-primary">
-                          {verse.book}{' '}
-                          <span dir="ltr">
-                            {verse.chapter}:{verse.verse_start}
-                            {verse.verse_end && verse.verse_end !== verse.verse_start && `-${verse.verse_end}`}
-                          </span>
+                          ({verse.book} {verse.chapter}: {verse.verse_start}
+                          {verse.verse_end && verse.verse_end !== verse.verse_start && `-${verse.verse_end}`})
                         </div>
                       </div>
                       <AIReader text={verse.verse_text} />
@@ -240,11 +237,8 @@ export default function TopicReader() {
                       </div>
                       <div className="flex-1">
                         <p className="text-xs font-medium text-primary mb-1">
-                          {verse.book}{' '}
-                          <span dir="ltr">
-                            {verse.chapter}:{verse.verse_start}
-                            {verse.verse_end && verse.verse_end !== verse.verse_start && `-${verse.verse_end}`}
-                          </span>
+                          ({verse.book} {verse.chapter}: {verse.verse_start}
+                          {verse.verse_end && verse.verse_end !== verse.verse_start && `-${verse.verse_end}`})
                         </p>
                         <p className="scripture-text text-sm leading-relaxed">
                           {verse.verse_text}
@@ -302,7 +296,7 @@ export default function TopicReader() {
                           {index + 1}
                         </div>
                         <span className="text-sm font-medium text-primary">
-                          {verse.book} <span dir="ltr">{verse.chapter}:{verse.verse_start}</span>
+                          ({verse.book} {verse.chapter}: {verse.verse_start})
                         </span>
                       </div>
                       <p className="text-sm text-muted-foreground mb-4 line-clamp-2">

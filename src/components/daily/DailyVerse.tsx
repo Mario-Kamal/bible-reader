@@ -38,7 +38,7 @@ export function DailyVerse() {
       </p>
       
       <p className="text-sm text-muted-foreground font-medium">
-        — {verse.book} <span dir="ltr">{verse.chapter}:{verse.verse_number}</span>
+        ({verse.book} {verse.chapter}: {verse.verse_number})
       </p>
     </Card>
   );
