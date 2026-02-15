@@ -175,8 +175,11 @@ export default function TopicReader() {
                           {index + 1}
                         </div>
                         <div className="text-sm font-medium text-primary">
-                          {verse.book} {verse.chapter}:{verse.verse_start}
-                          {verse.verse_end && verse.verse_end !== verse.verse_start && `-${verse.verse_end}`}
+                          {verse.book}{' '}
+                          <span dir="ltr">
+                            {verse.chapter}:{verse.verse_start}
+                            {verse.verse_end && verse.verse_end !== verse.verse_start && `-${verse.verse_end}`}
+                          </span>
                         </div>
                       </div>
                       <AIReader text={verse.verse_text} />
@@ -237,8 +240,11 @@ export default function TopicReader() {
                       </div>
                       <div className="flex-1">
                         <p className="text-xs font-medium text-primary mb-1">
-                          {verse.book} {verse.chapter}:{verse.verse_start}
-                          {verse.verse_end && verse.verse_end !== verse.verse_start && `-${verse.verse_end}`}
+                          {verse.book}{' '}
+                          <span dir="ltr">
+                            {verse.chapter}:{verse.verse_start}
+                            {verse.verse_end && verse.verse_end !== verse.verse_start && `-${verse.verse_end}`}
+                          </span>
                         </p>
                         <p className="scripture-text text-sm leading-relaxed">
                           {verse.verse_text}
@@ -296,7 +302,7 @@ export default function TopicReader() {
                           {index + 1}
                         </div>
                         <span className="text-sm font-medium text-primary">
-                          {verse.book} {verse.chapter}:{verse.verse_start}
+                          {verse.book} <span dir="ltr">{verse.chapter}:{verse.verse_start}</span>
                         </span>
                       </div>
                       <p className="text-sm text-muted-foreground mb-4 line-clamp-2">

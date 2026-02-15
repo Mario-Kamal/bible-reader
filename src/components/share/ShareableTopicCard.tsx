@@ -157,11 +157,16 @@ export function ShareableTopicCard({ topic, trigger }: ShareableTopicCardProps) 
     }
   };
 
-  const formatVerseReference = (verse: Verse) => {
-    if (verse.verse_end && verse.verse_end !== verse.verse_start) {
-      return `${verse.book} ${verse.chapter}:${verse.verse_start}-${verse.verse_end}`;
-    }
-    return `${verse.book} ${verse.chapter}:${verse.verse_start}`;
+  const renderVerseReference = (verse: Verse) => {
+    return (
+      <>
+        {verse.book}{' '}
+        <span dir="ltr">
+          {verse.chapter}:{verse.verse_start}
+          {verse.verse_end && verse.verse_end !== verse.verse_start && `-${verse.verse_end}`}
+        </span>
+      </>
+    );
   };
 
   return (
@@ -259,7 +264,7 @@ export function ShareableTopicCard({ topic, trigger }: ShareableTopicCardProps) 
                         "{verse.verse_text}"
                       </p>
                       <p className={cn("text-xs font-medium", selectedTheme.accent)}>
-                        — {formatVerseReference(verse)}
+                        — {renderVerseReference(verse)}
                       </p>
                     </div>
                   ))}

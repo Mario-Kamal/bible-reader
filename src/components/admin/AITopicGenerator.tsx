@@ -180,8 +180,11 @@ export function AITopicGenerator({ onSave, isSaving }: AITopicGeneratorProps) {
               {generatedTopic.verses.map((verse, idx) => (
                 <div key={idx} className="p-4 bg-muted/30 rounded-xl border border-border/30">
                   <div className="text-sm font-medium text-primary mb-2">
-                    {verse.book} {verse.chapter}:{verse.verse_start}
-                    {verse.verse_end && verse.verse_end !== verse.verse_start && `-${verse.verse_end}`}
+                    {verse.book}{' '}
+                    <span dir="ltr">
+                      {verse.chapter}:{verse.verse_start}
+                      {verse.verse_end && verse.verse_end !== verse.verse_start && `-${verse.verse_end}`}
+                    </span>
                   </div>
                   <p className="scripture-text leading-relaxed">{verse.verse_text}</p>
                 </div>
