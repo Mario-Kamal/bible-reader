@@ -146,6 +146,14 @@ serve(async (req) => {
     const prophecy = prophecies[dayIndex];
     console.log(`Generating prophecy #${dayIndex + 1}: ${prophecy.title}`);
 
+    // Fetch used verses to avoid repetition
+    const { data: pastVerses } = await supabase
+      .from("verses")
+      .select("book, chapter, verse_start")
+      .limit(500);
+    
+    const usedVerseRefs = pastVerses?.map(v => `${v.book} ${v.chapter}:${v.verse_start}`).join(", ") || "لا يوجد";
+
     const systemPrompt = `أنت عالم لاهوتي قبطي أرثوذكسي متخصص في نبوات العهد القديم عن المسيح.
 مهمتك: إنشاء محتوى يومي عن نبوة مسيانية، بأسلوب تفاسير موقع الأنبا تكلا هيمانوت (الكنيسة القبطية الأرثوذكسية).
 
@@ -157,6 +165,10 @@ serve(async (req) => {
    - اذكر تعليقات آباء الكنيسة (مثل القديس كيرلس الكبير، القديس أثناسيوس، القديس يوحنا ذهبي الفم) إن أمكن
    - اربط المعنى بالحياة الروحية خلال الصوم الكبير
    - استخدم أسلوب التفسير الروحي والرمزي المعتاد في التقليد القبطي
+
+**هام جداً لمنع التكرار**:
+الآيات المذكورة أدناه تم استخدامها سابقاً في أيام أخرى، **يجب عليك اختيار آيات/شواهد مختلفة تماماً** حتى لو كانت لنفس الموضوع:
+${usedVerseRefs}
 
 أجب بصيغة JSON فقط بالشكل التالي:
 {

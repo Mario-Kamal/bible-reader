@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,9 +15,17 @@ serve(async (req) => {
     const { topicTitle } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
-    }
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Fetch used verses to avoid repetition
+    const { data: pastVerses } = await supabase
+      .from("verses")
+      .select("book, chapter, verse_start")
+      .limit(500);
+    
+    const usedVerseRefs = pastVerses?.map(v => `${v.book} ${v.chapter}:${v.verse_start}`).join(", ") || "لا يوجد";
 
     const systemPrompt = `أنت عالم لاهوتي قبطي أرثوذكسي متخصص في نبوات العهد القديم عن المسيح.
 مهمتك: إنشاء محتوى عن نبوة مسيانية بأسلوب تفاسير موقع الأنبا تكلا هيمانوت.
@@ -27,6 +36,10 @@ serve(async (req) => {
 3. اكتب تفسيراً روحياً أرثوذكسياً يناسب الصوم الكبير (3-5 فقرات)
    - اشرح النبوة وكيف تحققت في المسيح
    - اذكر تعليقات آباء الكنيسة إن أمكن
+
+**هام جداً لمنع التكرار**:
+الآيات المذكورة أدناه تم استخدامها سابقاً في أيام أخرى، **يجب عليك اختيار آيات/شواهد مختلفة تماماً** حتى لو كانت لنفس الموضوع:
+${usedVerseRefs}
 
 أجب بصيغة JSON:
 {
