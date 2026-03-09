@@ -13,6 +13,7 @@ import Leaderboard from "./pages/Leaderboard";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import Install from "./pages/Install";
+import ReadingPlan from "./pages/ReadingPlan";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -62,6 +63,7 @@ const AppRoutes = () => (
     <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
     <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+    <Route path="/reading-plan" element={<ProtectedRoute><ReadingPlan /></ProtectedRoute>} />
     <Route path="/install" element={<Install />} />
     <Route path="*" element={<NotFound />} />
   </Routes>

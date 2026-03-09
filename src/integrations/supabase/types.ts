@@ -160,6 +160,39 @@ export type Database = {
           },
         ]
       }
+      reading_plans: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string
+          id: string
+          is_active: boolean
+          start_date: string
+          title: string
+          total_topics: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date: string
+          id?: string
+          is_active?: boolean
+          start_date: string
+          title: string
+          total_topics?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string
+          id?: string
+          is_active?: boolean
+          start_date?: string
+          title?: string
+          total_topics?: number
+        }
+        Relationships: []
+      }
       topics: {
         Row: {
           audio_url: string | null
@@ -201,6 +234,41 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      user_plan_progress: {
+        Row: {
+          completed_at: string | null
+          enrolled_at: string
+          id: string
+          is_active: boolean
+          plan_id: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          enrolled_at?: string
+          id?: string
+          is_active?: boolean
+          plan_id: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          enrolled_at?: string
+          id?: string
+          is_active?: boolean
+          plan_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_plan_progress_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "reading_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_progress: {
         Row: {
@@ -292,6 +360,50 @@ export type Database = {
             columns: ["topic_id"]
             isOneToOne: false
             referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_goals: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string
+          id: string
+          plan_id: string
+          start_date: string
+          title: string
+          topics_count: number
+          week_number: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date: string
+          id?: string
+          plan_id: string
+          start_date: string
+          title: string
+          topics_count?: number
+          week_number: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string
+          id?: string
+          plan_id?: string
+          start_date?: string
+          title?: string
+          topics_count?: number
+          week_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_goals_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "reading_plans"
             referencedColumns: ["id"]
           },
         ]
