@@ -355,6 +355,9 @@ export default function Admin() {
           {/* AI Competition Generator */}
           <AICompetitionGenerator topics={topics || []} />
 
+          {/* Weekly Challenge */}
+          <WeeklyChallengeAdmin />
+
           {/* Topics List */}
           <TopicsList 
             topics={topics || []}

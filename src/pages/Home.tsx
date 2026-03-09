@@ -121,6 +121,9 @@ export default function Home() {
           {/* Notification Prompt */}
           <NotificationPrompt />
 
+          {/* Weekly Challenge */}
+          <WeeklyChallenge />
+
           {/* Admin Quick Access */}
           {isAdmin && (
             <Link to="/admin">
