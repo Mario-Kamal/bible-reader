@@ -109,7 +109,7 @@ async function encryptPayload(
 
   const userPublicKey = await crypto.subtle.importKey(
     "raw",
-    userPublicKeyBytes,
+    userPublicKeyBytes.buffer as ArrayBuffer,
     { name: "ECDH", namedCurve: "P-256" },
     true,
     [],
@@ -141,9 +141,9 @@ async function encryptPayload(
     info: Uint8Array,
     length: number,
   ): Promise<Uint8Array> {
-    const key = await crypto.subtle.importKey("raw", ikm, { name: "HKDF" }, false, ["deriveBits"]);
+    const key = await crypto.subtle.importKey("raw", ikm.buffer as ArrayBuffer, { name: "HKDF" }, false, ["deriveBits"]);
     const bits = await crypto.subtle.deriveBits(
-      { name: "HKDF", hash: "SHA-256", salt: hkdfSalt, info },
+      { name: "HKDF", hash: "SHA-256", salt: hkdfSalt.buffer as ArrayBuffer, info: info.buffer as ArrayBuffer },
       key,
       length * 8,
     );
@@ -166,9 +166,9 @@ async function encryptPayload(
   paddedPayload.set(payloadBytes);
   paddedPayload[payloadBytes.length] = 2;
 
-  const encryptionKey = await crypto.subtle.importKey("raw", contentEncryptionKey, { name: "AES-GCM" }, false, ["encrypt"]);
+  const encryptionKey = await crypto.subtle.importKey("raw", contentEncryptionKey.buffer as ArrayBuffer, { name: "AES-GCM" }, false, ["encrypt"]);
   const ciphertext = new Uint8Array(
-    await crypto.subtle.encrypt({ name: "AES-GCM", iv: nonce }, encryptionKey, paddedPayload),
+    await crypto.subtle.encrypt({ name: "AES-GCM", iv: nonce.buffer as ArrayBuffer }, encryptionKey, paddedPayload.buffer as ArrayBuffer),
   );
 
   // aes128gcm header: salt(16) + rs(4) + idlen(1) + keyid(65)
@@ -260,7 +260,7 @@ serve(async (req) => {
             TTL: "86400",
             Authorization: `vapid t=${jwt}, k=${vapidPublicKey}`,
           },
-          body: encrypted,
+          body: encrypted.buffer as ArrayBuffer,
         });
 
         if (response.ok || response.status === 201) {
