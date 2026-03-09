@@ -11,6 +11,7 @@ export function MobileNav() {
   const navItems = [
     { href: '/home', icon: Home, label: 'الرئيسية' },
     { href: '/topics', icon: BookOpen, label: 'المواضيع' },
+    { href: '/competitions', icon: Swords, label: 'المسابقة' },
     { href: '/leaderboard', icon: Trophy, label: 'الترتيب' },
     { href: '/profile', icon: null, label: 'حسابي', isProfile: true },
   ];
