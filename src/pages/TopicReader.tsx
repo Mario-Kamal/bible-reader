@@ -13,6 +13,7 @@ import { ReadingEvaluator } from '@/components/reader/ReadingEvaluator';
 import { PatristicCommentariesSection } from '@/components/reader/PatristicCommentariesSection';
 import { ShareButton } from '@/components/share/ShareButton';
 import { ShareableTopicCard } from '@/components/share/ShareableTopicCard';
+import { ReaderSettingsButton, useReaderSettings, getReaderThemeClasses } from '@/components/reader/ReaderSettings';
 import { ArrowRight, Check, BookOpen, Sparkles, Volume2, Mic, Image } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
