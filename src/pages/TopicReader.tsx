@@ -139,7 +139,7 @@ export default function TopicReader() {
         </header>
 
         {/* Tabs */}
-        <div className="px-4 py-4 max-w-2xl mx-auto">
+        <div className={cn("px-4 py-4 max-w-2xl mx-auto", getReaderThemeClasses(theme))}>
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="read" className="gap-1">
