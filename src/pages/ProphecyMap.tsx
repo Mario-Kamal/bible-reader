@@ -461,13 +461,13 @@ export default function ProphecyMap() {
                     {/* Label */}
                     <text
                       x={node.x}
-                      y={node.y + (isActive ? 42 : 36)}
+                      y={node.y + (isActive ? 44 : 38)}
                       textAnchor="middle"
-                      className="fill-foreground font-medium"
+                      className="fill-foreground font-semibold"
                       style={{
                         pointerEvents: 'none',
-                        fontSize: isActive ? '11px' : '9px',
-                        fontWeight: isActive ? 700 : 500,
+                        fontSize: isActive ? '12px' : '10px',
+                        fontWeight: isActive ? 700 : 600,
                         transition: 'all 0.3s ease',
                       }}
                     >
