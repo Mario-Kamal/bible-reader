@@ -14,6 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
+      competition_answers: {
+        Row: {
+          answered_at: string
+          competition_id: string
+          id: string
+          is_correct: boolean
+          points_earned: number
+          question_id: string
+          selected_answer: string
+          user_id: string
+        }
+        Insert: {
+          answered_at?: string
+          competition_id: string
+          id?: string
+          is_correct?: boolean
+          points_earned?: number
+          question_id: string
+          selected_answer: string
+          user_id: string
+        }
+        Update: {
+          answered_at?: string
+          competition_id?: string
+          id?: string
+          is_correct?: boolean
+          points_earned?: number
+          question_id?: string
+          selected_answer?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competition_answers_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      competitions: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string
+          id: string
+          is_active: boolean
+          start_date: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date: string
+          id?: string
+          is_active?: boolean
+          start_date: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string
+          id?: string
+          is_active?: boolean
+          start_date?: string
+          title?: string
+        }
+        Relationships: []
+      }
       daily_verses: {
         Row: {
           book: string
@@ -159,6 +237,7 @@ export type Database = {
       }
       questions: {
         Row: {
+          competition_id: string | null
           correct_answer: string
           created_at: string
           id: string
@@ -171,6 +250,7 @@ export type Database = {
           topic_id: string
         }
         Insert: {
+          competition_id?: string | null
           correct_answer: string
           created_at?: string
           id?: string
@@ -183,6 +263,7 @@ export type Database = {
           topic_id: string
         }
         Update: {
+          competition_id?: string | null
           correct_answer?: string
           created_at?: string
           id?: string
@@ -195,6 +276,13 @@ export type Database = {
           topic_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "questions_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "questions_topic_id_fkey"
             columns: ["topic_id"]
