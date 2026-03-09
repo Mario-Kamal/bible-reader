@@ -17,6 +17,7 @@ import { TopicsListDialog } from '@/components/admin/TopicsListDialog';
 import { TestNotificationButton } from '@/components/admin/TestNotificationButton';
 import { ScheduledNotifications } from '@/components/admin/ScheduledNotifications';
 import { AICompetitionGenerator } from '@/components/admin/AICompetitionGenerator';
+import { WeeklyChallengeAdmin } from '@/components/admin/WeeklyChallengeAdmin';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
