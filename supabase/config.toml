@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.generate-daily-prophecy]
 verify_jwt = false
+
+[functions.generate-topic-links]
+verify_jwt = false
