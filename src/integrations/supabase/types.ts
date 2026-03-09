@@ -325,6 +325,48 @@ export type Database = {
         }
         Relationships: []
       }
+      topic_links: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          relationship_type: string
+          source_topic_id: string
+          target_topic_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          relationship_type?: string
+          source_topic_id: string
+          target_topic_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          relationship_type?: string
+          source_topic_id?: string
+          target_topic_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "topic_links_source_topic_id_fkey"
+            columns: ["source_topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "topic_links_target_topic_id_fkey"
+            columns: ["target_topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       topics: {
         Row: {
           audio_url: string | null
