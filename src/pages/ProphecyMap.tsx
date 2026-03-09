@@ -360,29 +360,6 @@ export default function ProphecyMap() {
                       transition: 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                     }}
                   >
-                    {/* Entrance animation - expand from center */}
-                    <animateTransform
-                      attributeName="transform"
-                      type="scale"
-                      from="0 0"
-                      to="1 1"
-                      dur={`${0.4 + index * 0.06}s`}
-                      fill="freeze"
-                      begin="0s"
-                      calcMode="spline"
-                      keySplines="0.34 1.56 0.64 1"
-                      additive="sum"
-                    />
-                    <animateTransform
-                      attributeName="transform"
-                      type="translate"
-                      from={`${node.x} ${node.y}`}
-                      to="0 0"
-                      dur="0.01s"
-                      fill="freeze"
-                      begin="0s"
-                      additive="sum"
-                    />
 
                     {/* Outer ring pulse for selected */}
                     {isSelected && (
