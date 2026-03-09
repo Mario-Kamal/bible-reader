@@ -76,10 +76,10 @@ export default function Competitions() {
     <AppLayout>
       <div className="min-h-screen pb-20" dir="rtl">
         {/* Header */}
-        <header className="bg-gradient-hero text-primary-foreground px-4 pt-8 pb-6">
+        <header className="bg-gradient-hero text-primary-foreground px-4 pt-8 pb-6 animate-slide-down">
           <div className="max-w-lg mx-auto">
             <div className="flex items-center gap-3 mb-2">
-              <Swords className="w-6 h-6" />
+              <Swords className="w-6 h-6 animate-wiggle" />
               <h1 className="text-2xl font-bold">المسابقة الأسبوعية</h1>
             </div>
             {competition && (
@@ -95,19 +95,19 @@ export default function Competitions() {
               <Skeleton className="h-48 w-full rounded-xl" />
             </div>
           ) : !competition ? (
-            <div className="text-center py-16">
-              <Clock className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+            <div className="text-center py-16 animate-scale-up">
+              <Clock className="w-16 h-16 mx-auto text-muted-foreground mb-4 animate-float" />
               <h3 className="text-xl font-bold mb-2">لا توجد مسابقة حالياً</h3>
               <p className="text-muted-foreground">ترقب المسابقة الأسبوعية القادمة!</p>
             </div>
           ) : (
             <>
               {/* Score Summary */}
-              <Card className="border-primary/20 bg-primary/5">
+              <Card className="border-primary/20 bg-primary/5 competition-active animate-scale-in">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <Star className="w-8 h-8 text-primary" />
+                      <Star className="w-8 h-8 text-primary animate-pulse-soft" />
                       <div>
                         <p className="text-sm text-muted-foreground">نقاطك في المسابقة</p>
                         <p className="text-2xl font-bold text-primary">{totalScore}</p>
@@ -127,7 +127,7 @@ export default function Competitions() {
 
               {/* Quiz Section */}
               {unanswered.length > 0 && currentQuestion ? (
-                <Card>
+                <Card className="animate-slide-up">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg">السؤال {(myAnswers?.length || 0) + currentIndex + 1}</CardTitle>
@@ -156,10 +156,10 @@ export default function Competitions() {
                             onClick={() => handleAnswer(opt)}
                             disabled={showResult}
                             className={cn(
-                              'w-full text-right p-4 rounded-xl border-2 transition-all',
+                              'w-full text-right p-4 rounded-xl border-2 transition-all duration-200',
                               !showResult && 'hover:border-primary/50 hover:bg-primary/5',
                               !showResult && !isSelected && 'border-border',
-                              showResult && isCorrectAnswer && 'border-green-500 bg-green-500/10',
+                              showResult && isCorrectAnswer && 'border-success bg-success/10 animate-scale-in',
                               showResult && isSelected && !isCorrectAnswer && 'border-destructive bg-destructive/10',
                               showResult && !isSelected && !isCorrectAnswer && 'border-border opacity-50'
                             )}
@@ -170,7 +170,7 @@ export default function Competitions() {
                               </span>
                               <span className="flex-1">{text}</span>
                               {showResult && isCorrectAnswer && (
-                                <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
+                                <CheckCircle2 className="w-5 h-5 text-success shrink-0" />
                               )}
                               {showResult && isSelected && !isCorrectAnswer && (
                                 <XCircle className="w-5 h-5 text-destructive shrink-0" />
@@ -182,21 +182,21 @@ export default function Competitions() {
                     </div>
 
                     {showResult && currentIndex < unanswered.length - 1 && (
-                      <Button onClick={handleNext} className="w-full mt-4">
+                      <Button onClick={handleNext} className="w-full mt-4 animate-slide-up">
                         السؤال التالي
                       </Button>
                     )}
                     {showResult && currentIndex === unanswered.length - 1 && (
-                      <div className="text-center py-4">
-                        <CheckCircle2 className="w-12 h-12 mx-auto text-green-500 mb-2" />
+                      <div className="text-center py-4 animate-bounce-in">
+                        <CheckCircle2 className="w-12 h-12 mx-auto text-success mb-2" />
                         <p className="font-bold text-lg">أنهيت جميع الأسئلة! 🎉</p>
                       </div>
                     )}
                   </CardContent>
                 </Card>
               ) : myAnswers && myAnswers.length > 0 ? (
-                <Card className="text-center p-8">
-                  <CheckCircle2 className="w-16 h-16 mx-auto text-green-500 mb-4" />
+                <Card className="text-center p-8 animate-bounce-in">
+                  <CheckCircle2 className="w-16 h-16 mx-auto text-success mb-4" />
                   <h3 className="text-xl font-bold mb-2">أنهيت المسابقة! 🏆</h3>
                   <p className="text-muted-foreground mb-4">
                     أجبت على {myAnswers.length} سؤال بنتيجة {correctCount} صحيحة
@@ -204,7 +204,7 @@ export default function Competitions() {
                   <PointsBadge points={totalScore} size="lg" />
                 </Card>
               ) : (
-                <Card className="text-center p-8">
+                <Card className="text-center p-8 animate-fade-in">
                   <Swords className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">لا توجد أسئلة في هذه المسابقة بعد</p>
                 </Card>

@@ -15,6 +15,7 @@ import { TopicsList } from '@/components/admin/TopicsList';
 import { UsersListDialog } from '@/components/admin/UsersListDialog';
 import { TopicsListDialog } from '@/components/admin/TopicsListDialog';
 import { TestNotificationButton } from '@/components/admin/TestNotificationButton';
+import { CompetitionNotificationButton } from '@/components/admin/CompetitionNotificationButton';
 import { ScheduledNotifications } from '@/components/admin/ScheduledNotifications';
 import { AICompetitionGenerator } from '@/components/admin/AICompetitionGenerator';
 import { WeeklyChallengeAdmin } from '@/components/admin/WeeklyChallengeAdmin';
@@ -319,7 +320,8 @@ export default function Admin() {
 
           {/* Notifications Section */}
           <div className="space-y-4">
-            <div className="flex justify-end">
+            <div className="flex gap-2 justify-end flex-wrap">
+              <CompetitionNotificationButton />
               <TestNotificationButton />
             </div>
             <ScheduledNotifications />
