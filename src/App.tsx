@@ -14,6 +14,7 @@ import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import Install from "./pages/Install";
 import ReadingPlan from "./pages/ReadingPlan";
+import Competitions from "./pages/Competitions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
