@@ -9,6 +9,7 @@ import { useAutoUpdate } from "@/hooks/useAutoUpdate";
 import Auth from "./pages/Auth";
 import Home from "./pages/Home";
 import Topics from "./pages/Topics";
+import Bookmarks from "./pages/Bookmarks";
 import TopicReader from "./pages/TopicReader";
 import Leaderboard from "./pages/Leaderboard";
 import Profile from "./pages/Profile";
