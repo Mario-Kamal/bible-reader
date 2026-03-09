@@ -76,10 +76,10 @@ export default function Competitions() {
     <AppLayout>
       <div className="min-h-screen pb-20" dir="rtl">
         {/* Header */}
-        <header className="bg-gradient-hero text-primary-foreground px-4 pt-8 pb-6">
+        <header className="bg-gradient-hero text-primary-foreground px-4 pt-8 pb-6 animate-slide-down">
           <div className="max-w-lg mx-auto">
             <div className="flex items-center gap-3 mb-2">
-              <Swords className="w-6 h-6" />
+              <Swords className="w-6 h-6 animate-wiggle" />
               <h1 className="text-2xl font-bold">المسابقة الأسبوعية</h1>
             </div>
             {competition && (
@@ -95,19 +95,19 @@ export default function Competitions() {
               <Skeleton className="h-48 w-full rounded-xl" />
             </div>
           ) : !competition ? (
-            <div className="text-center py-16">
-              <Clock className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+            <div className="text-center py-16 animate-scale-up">
+              <Clock className="w-16 h-16 mx-auto text-muted-foreground mb-4 animate-float" />
               <h3 className="text-xl font-bold mb-2">لا توجد مسابقة حالياً</h3>
               <p className="text-muted-foreground">ترقب المسابقة الأسبوعية القادمة!</p>
             </div>
           ) : (
             <>
               {/* Score Summary */}
-              <Card className="border-primary/20 bg-primary/5">
+              <Card className="border-primary/20 bg-primary/5 competition-active animate-scale-in">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <Star className="w-8 h-8 text-primary" />
+                      <Star className="w-8 h-8 text-primary animate-pulse-soft" />
                       <div>
                         <p className="text-sm text-muted-foreground">نقاطك في المسابقة</p>
                         <p className="text-2xl font-bold text-primary">{totalScore}</p>
@@ -127,7 +127,7 @@ export default function Competitions() {
 
               {/* Quiz Section */}
               {unanswered.length > 0 && currentQuestion ? (
-                <Card>
+                <Card className="animate-slide-up">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg">السؤال {(myAnswers?.length || 0) + currentIndex + 1}</CardTitle>
