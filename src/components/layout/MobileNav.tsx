@@ -12,7 +12,7 @@ export function MobileNav() {
     { href: '/home', icon: Home, label: 'الرئيسية' },
     { href: '/topics', icon: BookOpen, label: 'المواضيع' },
     { href: '/competitions', icon: Swords, label: 'المسابقة' },
-    { href: '/leaderboard', icon: Trophy, label: 'الترتيب' },
+    { href: '/prophecy-map', icon: GitBranch, label: 'الخريطة' },
     { href: '/profile', icon: null, label: 'حسابي', isProfile: true },
   ];
 
