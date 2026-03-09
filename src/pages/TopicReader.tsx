@@ -27,6 +27,7 @@ export default function TopicReader() {
   
   const [showCompletion, setShowCompletion] = useState(false);
   const [activeTab, setActiveTab] = useState<'read' | 'listen'>('read');
+  const { fontSize, setFontSize, theme, setTheme } = useReaderSettings();
 
   const isCompleted = progress?.some(p => p.topic_id === topicId);
   const sortedVerses = topic?.verses?.sort((a, b) => a.order_index - b.order_index) || [];
