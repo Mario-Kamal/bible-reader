@@ -140,7 +140,23 @@ export default function Home() {
             </Link>
           )}
 
-          {/* Daily Reader Section */}
+          {/* Reading Plan Card */}
+          <Link to="/reading-plan">
+            <Card className="p-4 border-secondary/30 bg-secondary/5 hover:bg-secondary/10 transition-colors">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-secondary/20 flex items-center justify-center">
+                    <Calendar className="w-5 h-5 text-secondary-foreground" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">خطة القراءة الشهرية</h3>
+                    <p className="text-sm text-muted-foreground">جدول منظم بأهداف أسبوعية</p>
+                  </div>
+                </div>
+                <ChevronLeft className="w-5 h-5 text-muted-foreground" />
+              </div>
+            </Card>
+          </Link>
           <section>
             <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-primary" />
