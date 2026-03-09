@@ -351,6 +351,9 @@ export default function Admin() {
             </div>
           </div>
 
+          {/* AI Competition Generator */}
+          <AICompetitionGenerator topics={topics || []} />
+
           {/* Topics List */}
           <TopicsList 
             topics={topics || []}
