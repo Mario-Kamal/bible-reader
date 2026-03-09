@@ -11,3 +11,9 @@ verify_jwt = false
 
 [functions.send-push-notification]
 verify_jwt = false
+
+[functions.generate-competition]
+verify_jwt = false
+
+[functions.generate-daily-prophecy]
+verify_jwt = false

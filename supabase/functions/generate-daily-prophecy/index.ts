@@ -308,7 +308,21 @@ ${usedVerseRefs}
       console.log("Push notification failed (non-critical):", notifErr);
     }
 
-    return new Response(
+    // Generate competition questions for this topic
+    try {
+      const compFuncUrl = `${supabaseUrl}/functions/v1/generate-competition`;
+      await fetch(compFuncUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${supabaseServiceKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ topicId: newTopic.id }),
+      });
+      console.log("Competition questions generated");
+    } catch (compErr) {
+      console.log("Competition generation failed (non-critical):", compErr);
+    }
       JSON.stringify({
         success: true,
         topicId: newTopic.id,
