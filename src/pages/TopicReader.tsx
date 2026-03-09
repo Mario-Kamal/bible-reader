@@ -115,6 +115,7 @@ export default function TopicReader() {
               </p>
             </div>
             <DarkModeToggle />
+            <BookmarkButton topicId={topic.id} />
             <ShareableTopicCard 
               topic={topic}
               trigger={
