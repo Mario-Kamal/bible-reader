@@ -227,13 +227,28 @@ export default function Admin() {
   });
 
   const togglePublish = useMutation({
-    mutationFn: async ({ id, published }: { id: string; published: boolean }) => {
+    mutationFn: async ({ id, published, title }: { id: string; published: boolean; title?: string }) => {
       const { error } = await supabase.from('topics').update({ is_published: published }).eq('id', id);
       if (error) throw error;
+      
+      // Auto-send notification when publishing
+      if (published) {
+        try {
+          await supabase.functions.invoke('send-push-notification', {
+            body: {
+              title: '📖 موضوع جديد!',
+              body: title || 'تم نشر موضوع جديد، اقرأه الآن!',
+              topicId: id,
+            }
+          });
+        } catch (e) {
+          console.error('Failed to send auto notification:', e);
+        }
+      }
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['admin-topics'] });
-      toast.success('تم التحديث!');
+      toast.success(variables.published ? 'تم النشر وإرسال الإشعار!' : 'تم إلغاء النشر!');
     },
   });
 
