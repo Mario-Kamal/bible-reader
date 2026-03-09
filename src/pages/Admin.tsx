@@ -351,7 +351,10 @@ export default function Admin() {
           <TopicsList 
             topics={topics || []}
             onEdit={setEditingTopic}
-            onTogglePublish={(id, published) => togglePublish.mutate({ id, published })}
+            onTogglePublish={(id, published) => {
+              const topic = topics?.find(t => t.id === id);
+              togglePublish.mutate({ id, published, title: topic?.title });
+            }}
             onDelete={(id) => deleteTopic.mutate(id)}
           />
         </div>
