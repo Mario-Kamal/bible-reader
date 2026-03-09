@@ -187,7 +187,7 @@ export default function TopicReader() {
                       </div>
                       <AIReader text={verse.verse_text} />
                     </div>
-                    <p className="scripture-text pr-11">
+                    <p className="scripture-text pr-11" style={{ fontSize: `${fontSize}px`, lineHeight: 1.8 }}>
                       {verse.verse_text}
                     </p>
                   </Card>
