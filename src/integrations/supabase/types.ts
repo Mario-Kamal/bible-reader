@@ -48,8 +48,11 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          current_streak: number
           full_name: string
           id: string
+          last_reading_date: string | null
+          longest_streak: number
           phone: string
           topics_completed: number
           total_points: number
@@ -58,8 +61,11 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          current_streak?: number
           full_name: string
           id: string
+          last_reading_date?: string | null
+          longest_streak?: number
           phone: string
           topics_completed?: number
           total_points?: number
@@ -68,8 +74,11 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          current_streak?: number
           full_name?: string
           id?: string
+          last_reading_date?: string | null
+          longest_streak?: number
           phone?: string
           topics_completed?: number
           total_points?: number
