@@ -15,6 +15,7 @@ import { TopicsList } from '@/components/admin/TopicsList';
 import { UsersListDialog } from '@/components/admin/UsersListDialog';
 import { TopicsListDialog } from '@/components/admin/TopicsListDialog';
 import { TestNotificationButton } from '@/components/admin/TestNotificationButton';
+import { ScheduledNotifications } from '@/components/admin/ScheduledNotifications';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
