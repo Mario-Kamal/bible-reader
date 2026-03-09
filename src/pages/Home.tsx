@@ -6,6 +6,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { DailyReader } from '@/components/daily/DailyReader';
 import { DailyVerse } from '@/components/daily/DailyVerse';
 import { NotificationPrompt } from '@/components/notifications/NotificationPrompt';
+import { WeeklyChallenge } from '@/components/challenges/WeeklyChallenge';
 import { InstallBanner } from '@/components/pwa/InstallBanner';
 import { PointsBadge } from '@/components/ui/PointsBadge';
 import { ProgressRing } from '@/components/ui/ProgressRing';
