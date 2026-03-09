@@ -249,7 +249,7 @@ export default function TopicReader() {
                           ({verse.book} {verse.chapter}: {verse.verse_start}
                           {verse.verse_end && verse.verse_end !== verse.verse_start && `-${verse.verse_end}`})
                         </p>
-                        <p className="scripture-text text-sm leading-relaxed">
+                        <p className="scripture-text leading-relaxed" style={{ fontSize: `${Math.max(fontSize - 2, 12)}px`, lineHeight: 1.8 }}>
                           {verse.verse_text}
                         </p>
                       </div>
