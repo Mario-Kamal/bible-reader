@@ -203,6 +203,9 @@ export default function TopicReader() {
                   </p>
                 </Card>
               )}
+
+              {/* Patristic Commentaries */}
+              <PatristicCommentariesSection commentaries={commentaries} />
             </TabsContent>
 
             {/* Listen Tab */}
