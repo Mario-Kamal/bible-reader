@@ -15,6 +15,7 @@ import { ShareButton } from '@/components/share/ShareButton';
 import { ShareableTopicCard } from '@/components/share/ShareableTopicCard';
 import { ReaderSettingsButton, useReaderSettings, getReaderThemeClasses } from '@/components/reader/ReaderSettings';
 import { DarkModeToggle } from '@/components/ui/DarkModeToggle';
+import { BookmarkButton } from '@/components/bookmarks/BookmarkButton';
 import { ArrowRight, Check, BookOpen, Sparkles, Volume2, Mic, Image } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -114,6 +115,7 @@ export default function TopicReader() {
               </p>
             </div>
             <DarkModeToggle />
+            <BookmarkButton topicId={topic.id} />
             <ShareableTopicCard 
               topic={topic}
               trigger={

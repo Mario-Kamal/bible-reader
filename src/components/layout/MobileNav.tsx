@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Trophy, Swords, GitBranch, User } from 'lucide-react';
+import { Home, BookOpen, Swords, GitBranch, User, Bookmark } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -12,6 +12,7 @@ export function MobileNav() {
   const navItems = [
     { href: '/home', icon: Home, label: 'الرئيسية' },
     { href: '/topics', icon: BookOpen, label: 'المواضيع' },
+    { href: '/bookmarks', icon: Bookmark, label: 'المفضلة' },
     { href: '/competitions', icon: Swords, label: 'المسابقة' },
     { href: '/prophecy-map', icon: GitBranch, label: 'الخريطة' },
     { href: '/profile', icon: null, label: 'حسابي', isProfile: true },
@@ -25,43 +26,43 @@ export function MobileNav() {
           <DarkModeToggle />
         </div>
       </div>
-      
+
       <div className="flex items-center justify-around h-16">
         {navItems.map((item) => {
-          const isActive = location.pathname === item.href || 
+          const isActive =
+            location.pathname === item.href ||
             (item.href === '/topics' && location.pathname.startsWith('/topic'));
-          
+
           return (
             <Link
               key={item.href}
               to={item.href}
               className={cn(
-                "flex flex-col items-center justify-center w-full h-full gap-1 transition-colors",
-                isActive 
-                  ? "text-primary" 
-                  : "text-muted-foreground hover:text-foreground"
+                'flex flex-col items-center justify-center w-full h-full gap-1 transition-colors',
+                isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
               )}
             >
               {item.isProfile ? (
-                <Avatar className={cn(
-                  "w-6 h-6 transition-transform",
-                  isActive && "scale-110 ring-2 ring-primary"
-                )}>
+                <Avatar
+                  className={cn(
+                    'w-6 h-6 transition-transform',
+                    isActive && 'scale-110 ring-2 ring-primary',
+                  )}
+                >
                   <AvatarImage src={profile?.avatar_url || ''} alt={profile?.full_name} />
                   <AvatarFallback className="bg-muted text-muted-foreground text-xs">
                     <User className="w-3 h-3" />
                   </AvatarFallback>
                 </Avatar>
               ) : (
-                item.icon && <item.icon className={cn(
-                  "w-5 h-5 transition-transform",
-                  isActive && "scale-110"
-                )} />
+                item.icon && (
+                  <item.icon
+                    className={cn('w-5 h-5 transition-transform', isActive && 'scale-110')}
+                  />
+                )
               )}
               <span className="text-xs font-medium">{item.label}</span>
-              {isActive && (
-                <span className="absolute bottom-1 w-1 h-1 rounded-full bg-primary" />
-              )}
+              {isActive && <span className="absolute bottom-1 w-1 h-1 rounded-full bg-primary" />}
             </Link>
           );
         })}
