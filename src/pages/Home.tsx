@@ -12,7 +12,7 @@ import { ProgressRing } from '@/components/ui/ProgressRing';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BookOpen, ChevronLeft, Trophy, Flame } from 'lucide-react';
+import { BookOpen, ChevronLeft, Trophy, Flame, Calendar } from 'lucide-react';
 import { startOfDay, isAfter } from 'date-fns';
 
 export default function Home() {
