@@ -11,6 +11,9 @@ interface Profile {
   avatar_url: string | null;
   created_at: string;
   updated_at: string;
+  current_streak: number;
+  longest_streak: number;
+  last_reading_date: string | null;
 }
 
 interface AuthContextType {
