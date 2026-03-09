@@ -358,6 +358,7 @@ export default function ProphecyMap() {
                     style={{
                       opacity: isDimmed ? 0.1 : 1,
                       transition: 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                      animation: `nodeEntry 0.5s ease-out ${index * 0.05}s both`,
                     }}
                   >
 
