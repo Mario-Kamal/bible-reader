@@ -325,6 +325,36 @@ export type Database = {
         }
         Relationships: []
       }
+      scheduled_notifications: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          scheduled_at: string
+          sent: boolean
+          sent_at: string | null
+          title: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          scheduled_at: string
+          sent?: boolean
+          sent_at?: string | null
+          title: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          scheduled_at?: string
+          sent?: boolean
+          sent_at?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       topic_links: {
         Row: {
           created_at: string

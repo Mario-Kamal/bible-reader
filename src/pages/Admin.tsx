@@ -15,6 +15,7 @@ import { TopicsList } from '@/components/admin/TopicsList';
 import { UsersListDialog } from '@/components/admin/UsersListDialog';
 import { TopicsListDialog } from '@/components/admin/TopicsListDialog';
 import { TestNotificationButton } from '@/components/admin/TestNotificationButton';
+import { ScheduledNotifications } from '@/components/admin/ScheduledNotifications';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -226,13 +227,28 @@ export default function Admin() {
   });
 
   const togglePublish = useMutation({
-    mutationFn: async ({ id, published }: { id: string; published: boolean }) => {
+    mutationFn: async ({ id, published, title }: { id: string; published: boolean; title?: string }) => {
       const { error } = await supabase.from('topics').update({ is_published: published }).eq('id', id);
       if (error) throw error;
+      
+      // Auto-send notification when publishing
+      if (published) {
+        try {
+          await supabase.functions.invoke('send-push-notification', {
+            body: {
+              title: '📖 موضوع جديد!',
+              body: title || 'تم نشر موضوع جديد، اقرأه الآن!',
+              topicId: id,
+            }
+          });
+        } catch (e) {
+          console.error('Failed to send auto notification:', e);
+        }
+      }
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['admin-topics'] });
-      toast.success('تم التحديث!');
+      toast.success(variables.published ? 'تم النشر وإرسال الإشعار!' : 'تم إلغاء النشر!');
     },
   });
 
@@ -299,9 +315,12 @@ export default function Admin() {
             onTopicsClick={() => setShowTopicsDialog(true)}
           />
 
-          {/* Test Notification */}
-          <div className="flex justify-end">
-            <TestNotificationButton />
+          {/* Notifications Section */}
+          <div className="space-y-4">
+            <div className="flex justify-end">
+              <TestNotificationButton />
+            </div>
+            <ScheduledNotifications />
           </div>
 
           {/* Add Topic Options */}
@@ -335,7 +354,10 @@ export default function Admin() {
           <TopicsList 
             topics={topics || []}
             onEdit={setEditingTopic}
-            onTogglePublish={(id, published) => togglePublish.mutate({ id, published })}
+            onTogglePublish={(id, published) => {
+              const topic = topics?.find(t => t.id === id);
+              togglePublish.mutate({ id, published, title: topic?.title });
+            }}
             onDelete={(id) => deleteTopic.mutate(id)}
           />
         </div>
