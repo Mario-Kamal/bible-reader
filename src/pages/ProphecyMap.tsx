@@ -19,12 +19,12 @@ const RELATIONSHIP_LABELS: Record<string, string> = {
 };
 
 const RELATIONSHIP_COLORS: Record<string, string> = {
-  fulfillment: 'hsl(var(--primary))',
-  parallel: 'hsl(var(--accent))',
-  continuation: 'hsl(142 76% 36%)',
-  contrast: 'hsl(0 84% 60%)',
-  typology: 'hsl(280 67% 55%)',
-  related: 'hsl(var(--muted-foreground))',
+  fulfillment: 'hsl(210 90% 50%)',
+  parallel: 'hsl(45 95% 50%)',
+  continuation: 'hsl(145 70% 42%)',
+  contrast: 'hsl(0 80% 55%)',
+  typology: 'hsl(275 70% 58%)',
+  related: 'hsl(220 10% 55%)',
 };
 
 interface NodePosition {
