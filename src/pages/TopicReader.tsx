@@ -113,6 +113,7 @@ export default function TopicReader() {
                 {sortedVerses.length} آية
               </p>
             </div>
+            <DarkModeToggle />
             <ShareableTopicCard 
               topic={topic}
               trigger={
