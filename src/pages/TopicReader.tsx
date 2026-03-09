@@ -201,7 +201,7 @@ export default function TopicReader() {
                     <Sparkles className="w-4 h-4 text-accent" />
                     التفسير
                   </h3>
-                  <p className="text-muted-foreground leading-relaxed">
+                  <p className="text-muted-foreground leading-relaxed" style={{ fontSize: `${fontSize}px`, lineHeight: 1.8 }}>
                     {topic.interpretation}
                   </p>
                 </Card>
