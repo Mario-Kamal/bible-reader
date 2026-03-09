@@ -320,7 +320,8 @@ export default function Admin() {
 
           {/* Notifications Section */}
           <div className="space-y-4">
-            <div className="flex justify-end">
+            <div className="flex gap-2 justify-end flex-wrap">
+              <CompetitionNotificationButton />
               <TestNotificationButton />
             </div>
             <ScheduledNotifications />
