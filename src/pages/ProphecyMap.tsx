@@ -418,9 +418,9 @@ export default function ProphecyMap() {
                       cx={node.x}
                       cy={node.y}
                       r={nodeRadius}
-                      fill={node.isCompleted ? 'hsl(var(--primary))' : 'hsl(var(--card))'}
-                      stroke={isActive ? 'hsl(var(--primary))' : node.isCompleted ? 'hsl(var(--primary))' : 'hsl(var(--border))'}
-                      strokeWidth={isActive ? 2.5 : 1.5}
+                      fill={node.isCompleted ? 'hsl(210 90% 50%)' : 'hsl(var(--card))'}
+                      stroke={isActive ? 'hsl(210 90% 50%)' : node.isCompleted ? 'hsl(210 90% 60%)' : 'hsl(var(--border))'}
+                      strokeWidth={isActive ? 3 : 2}
                       filter={isActive ? 'url(#hover-glow)' : undefined}
                       style={{ transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}
                     />
