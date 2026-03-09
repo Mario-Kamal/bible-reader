@@ -21,6 +21,7 @@ export default function TopicReader() {
   const navigate = useNavigate();
   const { data: topic, isLoading } = useTopic(topicId);
   const { data: progress } = useUserProgress();
+  const { data: commentaries = [] } = usePatristicCommentaries(topicId);
   const completeTopic = useCompleteTopic();
   
   const [showCompletion, setShowCompletion] = useState(false);
