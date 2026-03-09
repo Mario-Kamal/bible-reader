@@ -125,6 +125,7 @@ export default function TopicReader() {
               text={topic.description || 'موضوع من رحلة الكتاب المقدس'}
               verse={sortedVerses[0]?.verse_text}
             />
+            <ReaderSettingsButton fontSize={fontSize} setFontSize={setFontSize} theme={theme} setTheme={setTheme} />
             {!isCompleted && (
               <PointsBadge points={topic.points_reward} size="sm" />
             )}
