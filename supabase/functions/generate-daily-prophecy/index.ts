@@ -324,6 +324,22 @@ ${usedVerseRefs}
       console.log("Competition generation failed (non-critical):", compErr);
     }
 
+    // Generate prophecy links
+    try {
+      const linksFuncUrl = `${supabaseUrl}/functions/v1/generate-topic-links`;
+      await fetch(linksFuncUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${supabaseServiceKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ topicId: newTopic.id }),
+      });
+      console.log("Topic links generated");
+    } catch (linksErr) {
+      console.log("Links generation failed (non-critical):", linksErr);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
