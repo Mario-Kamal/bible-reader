@@ -260,7 +260,7 @@ serve(async (req) => {
             TTL: "86400",
             Authorization: `vapid t=${jwt}, k=${vapidPublicKey}`,
           },
-          body: encrypted,
+          body: encrypted.buffer as ArrayBuffer,
         });
 
         if (response.ok || response.status === 201) {
