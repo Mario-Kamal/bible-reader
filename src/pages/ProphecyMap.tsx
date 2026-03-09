@@ -451,7 +451,7 @@ export default function ProphecyMap() {
                         x={node.x}
                         y={node.y + 4}
                         textAnchor="middle"
-                        className="fill-muted-foreground text-[9px] font-bold"
+                        className="fill-foreground text-[10px] font-bold"
                         style={{ pointerEvents: 'none' }}
                       >
                         {index + 1}
