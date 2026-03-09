@@ -70,9 +70,9 @@ export default function Home() {
                     {completedCount} من {totalTopics} نبوة مكتملة
                   </p>
                   <div className="flex items-center gap-3 text-sm">
-                    <div className="flex items-center gap-1 text-accent">
+                    <div className="flex items-center gap-1 text-accent" title="سلسلة القراءة اليومية">
                       <Flame className="w-4 h-4" />
-                      <span className="font-medium">{profile?.topics_completed || 0}</span>
+                      <span className="font-medium">{profile?.current_streak || 0} يوم</span>
                     </div>
                     <div className="flex items-center gap-1 text-primary">
                       <Trophy className="w-4 h-4" />
