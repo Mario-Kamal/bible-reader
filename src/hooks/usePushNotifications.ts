@@ -4,9 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 const PUSH_SUBSCRIPTION_KEY = 'push-notification-subscribed';
-
-// VAPID public key
-const VAPID_PUBLIC_KEY = 'BD0wpAViFn4OL_qF5hzRxUIXbM7-HeLlZdTPUJqyy-gpQm4Igh_paepnr5WW2ZtlYC37UNX7VnQ8ZmNtg4H8Lyo';
+const VAPID_KEY_CACHE = 'vapid-public-key';
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -28,6 +26,27 @@ function isStandalone(): boolean {
     window.matchMedia('(display-mode: standalone)').matches ||
     (navigator as any).standalone === true
   );
+}
+
+async function getVapidPublicKey(): Promise<string | null> {
+  // Check cache first
+  const cached = localStorage.getItem(VAPID_KEY_CACHE);
+  if (cached) return cached;
+
+  try {
+    const { data, error } = await supabase.functions.invoke('get-vapid-key');
+    if (error) throw error;
+    
+    const key = data?.publicKey;
+    if (key) {
+      localStorage.setItem(VAPID_KEY_CACHE, key);
+      return key;
+    }
+    return null;
+  } catch (err) {
+    console.error('Failed to fetch VAPID key:', err);
+    return null;
+  }
 }
 
 export function usePushNotifications() {
@@ -70,7 +89,6 @@ export function usePushNotifications() {
 
   const registerServiceWorker = async (): Promise<ServiceWorkerRegistration | null> => {
     try {
-      // Check if already registered
       let registration = await navigator.serviceWorker.getRegistration('/');
       
       if (!registration) {
@@ -78,7 +96,6 @@ export function usePushNotifications() {
         console.log('Service Worker registered:', registration);
       }
       
-      // Wait for the service worker to be active
       if (registration.installing) {
         await new Promise<void>((resolve) => {
           registration!.installing!.addEventListener('statechange', (e) => {
@@ -107,7 +124,6 @@ export function usePushNotifications() {
       return false;
     }
 
-    // Check iOS-specific requirements
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     if (isIOS && !isStandalone()) {
       toast.error('على iOS يجب تثبيت التطبيق أولاً (مشاركة ← إضافة للشاشة الرئيسية)', {
@@ -124,6 +140,13 @@ export function usePushNotifications() {
     setIsLoading(true);
 
     try {
+      // Get VAPID key from server (ensures it matches)
+      const vapidPublicKey = await getVapidPublicKey();
+      if (!vapidPublicKey) {
+        toast.error('فشل في الحصول على مفتاح الإشعارات');
+        return false;
+      }
+
       // Request notification permission
       const permissionResult = await Notification.requestPermission();
       setPermission(permissionResult);
@@ -140,19 +163,21 @@ export function usePushNotifications() {
         return false;
       }
 
-      // Check if already subscribed
-      let subscription = await registration.pushManager.getSubscription();
-      
-      if (!subscription) {
-        // Subscribe to push
-        const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
-        subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: applicationServerKey as BufferSource,
-        });
+      // Unsubscribe from old subscription first (in case key changed)
+      const existingSub = await registration.pushManager.getSubscription();
+      if (existingSub) {
+        await existingSub.unsubscribe();
+        console.log('Unsubscribed from old push subscription');
       }
 
-      console.log('Push subscription:', JSON.stringify(subscription.toJSON()));
+      // Subscribe with the correct server key
+      const applicationServerKey = urlBase64ToUint8Array(vapidPublicKey);
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: applicationServerKey as BufferSource,
+      });
+
+      console.log('Push subscription created:', subscription.endpoint.substring(0, 60));
 
       // Extract keys
       const p256dh = subscription.getKey('p256dh');
@@ -162,7 +187,6 @@ export function usePushNotifications() {
         throw new Error('Failed to get subscription keys');
       }
 
-      // Convert to base64
       const p256dhBase64 = btoa(String.fromCharCode(...new Uint8Array(p256dh)));
       const authBase64 = btoa(String.fromCharCode(...new Uint8Array(auth)));
 
@@ -187,20 +211,21 @@ export function usePushNotifications() {
       localStorage.setItem(PUSH_SUBSCRIPTION_KEY, 'true');
       toast.success('تم تفعيل الإشعارات بنجاح! 🔔');
 
-      // Show a local test notification
       try {
         new Notification('رحلة الكتاب المقدس 📖', {
-          body: 'ستتلقى إشعاراً عند نشر موضوع جديد',
+          body: 'ستتلقى إشعاراً عند نشر نبوة جديدة',
           icon: '/favicon.png',
           tag: 'welcome',
         });
       } catch {
-        // Local notification might fail, that's OK
+        // Local notification might fail, OK
       }
 
       return true;
     } catch (error) {
       console.error('Error subscribing to push:', error);
+      // Clear cached key in case it's stale
+      localStorage.removeItem(VAPID_KEY_CACHE);
       const msg = error instanceof Error ? error.message : 'خطأ غير معروف';
       toast.error(`فشل في تفعيل الإشعارات: ${msg}`);
       return false;
@@ -219,7 +244,6 @@ export function usePushNotifications() {
       const subscription = await registration.pushManager.getSubscription();
 
       if (subscription) {
-        // Remove from database first
         await supabase
           .from('push_subscriptions')
           .delete()
