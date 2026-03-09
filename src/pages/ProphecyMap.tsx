@@ -314,8 +314,8 @@ export default function ProphecyMap() {
                       d={`M ${source.x} ${source.y} Q ${cx} ${cy} ${target.x} ${target.y}`}
                       fill="none"
                       stroke={color}
-                      strokeWidth={isHighlighted ? 2.5 : 1}
-                      opacity={isDimmed ? 0.06 : isHighlighted ? 0.9 : 0.25}
+                      strokeWidth={isHighlighted ? 3 : 1.5}
+                      opacity={isDimmed ? 0.08 : isHighlighted ? 1 : 0.35}
                       strokeLinecap="round"
                       strokeDasharray={isHighlighted ? 'none' : '4 4'}
                       style={{
