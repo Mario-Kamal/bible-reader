@@ -439,6 +439,44 @@ export type Database = {
         }
         Relationships: []
       }
+      user_challenge_progress: {
+        Row: {
+          bonus_claimed: boolean
+          challenge_id: string
+          completed_count: number
+          id: string
+          is_completed: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bonus_claimed?: boolean
+          challenge_id: string
+          completed_count?: number
+          id?: string
+          is_completed?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bonus_claimed?: boolean
+          challenge_id?: string
+          completed_count?: number
+          id?: string
+          is_completed?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_challenge_progress_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_plan_progress: {
         Row: {
           completed_at: string | null
@@ -567,6 +605,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      weekly_challenges: {
+        Row: {
+          bonus_points: number
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          target_count: number
+          title: string
+          week_end: string
+          week_start: string
+        }
+        Insert: {
+          bonus_points?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          target_count?: number
+          title: string
+          week_end: string
+          week_start: string
+        }
+        Update: {
+          bonus_points?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          target_count?: number
+          title?: string
+          week_end?: string
+          week_start?: string
+        }
+        Relationships: []
       }
       weekly_goals: {
         Row: {

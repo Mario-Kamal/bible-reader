@@ -13,6 +13,7 @@ import { ReadingEvaluator } from '@/components/reader/ReadingEvaluator';
 import { PatristicCommentariesSection } from '@/components/reader/PatristicCommentariesSection';
 import { ShareButton } from '@/components/share/ShareButton';
 import { ShareableTopicCard } from '@/components/share/ShareableTopicCard';
+import { ReaderSettingsButton, useReaderSettings, getReaderThemeClasses } from '@/components/reader/ReaderSettings';
 import { ArrowRight, Check, BookOpen, Sparkles, Volume2, Mic, Image } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -26,6 +27,7 @@ export default function TopicReader() {
   
   const [showCompletion, setShowCompletion] = useState(false);
   const [activeTab, setActiveTab] = useState<'read' | 'listen'>('read');
+  const { fontSize, setFontSize, theme, setTheme } = useReaderSettings();
 
   const isCompleted = progress?.some(p => p.topic_id === topicId);
   const sortedVerses = topic?.verses?.sort((a, b) => a.order_index - b.order_index) || [];
@@ -123,6 +125,7 @@ export default function TopicReader() {
               text={topic.description || 'موضوع من رحلة الكتاب المقدس'}
               verse={sortedVerses[0]?.verse_text}
             />
+            <ReaderSettingsButton fontSize={fontSize} setFontSize={setFontSize} theme={theme} setTheme={setTheme} />
             {!isCompleted && (
               <PointsBadge points={topic.points_reward} size="sm" />
             )}
@@ -136,7 +139,7 @@ export default function TopicReader() {
         </header>
 
         {/* Tabs */}
-        <div className="px-4 py-4 max-w-2xl mx-auto">
+        <div className={cn("px-4 py-4 max-w-2xl mx-auto", getReaderThemeClasses(theme))}>
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="read" className="gap-1">
@@ -184,7 +187,7 @@ export default function TopicReader() {
                       </div>
                       <AIReader text={verse.verse_text} />
                     </div>
-                    <p className="scripture-text pr-11">
+                    <p className="scripture-text pr-11" style={{ fontSize: `${fontSize}px`, lineHeight: 1.8 }}>
                       {verse.verse_text}
                     </p>
                   </Card>
@@ -198,7 +201,7 @@ export default function TopicReader() {
                     <Sparkles className="w-4 h-4 text-accent" />
                     التفسير
                   </h3>
-                  <p className="text-muted-foreground leading-relaxed">
+                  <p className="text-muted-foreground leading-relaxed" style={{ fontSize: `${fontSize}px`, lineHeight: 1.8 }}>
                     {topic.interpretation}
                   </p>
                 </Card>
@@ -246,7 +249,7 @@ export default function TopicReader() {
                           ({verse.book} {verse.chapter}: {verse.verse_start}
                           {verse.verse_end && verse.verse_end !== verse.verse_start && `-${verse.verse_end}`})
                         </p>
-                        <p className="scripture-text text-sm leading-relaxed">
+                        <p className="scripture-text leading-relaxed" style={{ fontSize: `${Math.max(fontSize - 2, 12)}px`, lineHeight: 1.8 }}>
                           {verse.verse_text}
                         </p>
                       </div>

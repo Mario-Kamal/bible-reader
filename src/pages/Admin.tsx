@@ -16,6 +16,8 @@ import { UsersListDialog } from '@/components/admin/UsersListDialog';
 import { TopicsListDialog } from '@/components/admin/TopicsListDialog';
 import { TestNotificationButton } from '@/components/admin/TestNotificationButton';
 import { ScheduledNotifications } from '@/components/admin/ScheduledNotifications';
+import { AICompetitionGenerator } from '@/components/admin/AICompetitionGenerator';
+import { WeeklyChallengeAdmin } from '@/components/admin/WeeklyChallengeAdmin';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -349,6 +351,12 @@ export default function Admin() {
               />
             </div>
           </div>
+
+          {/* AI Competition Generator */}
+          <AICompetitionGenerator topics={topics || []} />
+
+          {/* Weekly Challenge */}
+          <WeeklyChallengeAdmin />
 
           {/* Topics List */}
           <TopicsList 
