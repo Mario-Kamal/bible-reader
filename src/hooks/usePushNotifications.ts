@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 
 const PUSH_SUBSCRIPTION_KEY = 'push-notification-subscribed';
 
-// VAPID public key - in production, this should come from environment
+// VAPID public key
 const VAPID_PUBLIC_KEY = 'BD0wpAViFn4OL_qF5hzRxUIXbM7-HeLlZdTPUJqyy-gpQm4Igh_paepnr5WW2ZtlYC37UNX7VnQ8ZmNtg4H8Lyo';
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
@@ -23,35 +23,43 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return outputArray;
 }
 
+function isStandalone(): boolean {
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    (navigator as any).standalone === true
+  );
+}
+
 export function usePushNotifications() {
   const { user } = useAuth();
   const [isSupported, setIsSupported] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [isLoading, setIsLoading] = useState(false);
+  const [isPWAInstalled, setIsPWAInstalled] = useState(false);
 
   useEffect(() => {
     const supported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
     setIsSupported(supported);
+    setIsPWAInstalled(isStandalone());
 
     if (supported) {
       setPermission(Notification.permission);
       
-      // Verify actual push subscription exists (not just localStorage flag)
       const checkSubscription = async () => {
         try {
           const reg = await navigator.serviceWorker.getRegistration();
-          const sub = reg ? await (reg as any).pushManager?.getSubscription() : null;
+          const sub = reg ? await reg.pushManager?.getSubscription() : null;
           if (sub) {
             setIsSubscribed(true);
             localStorage.setItem(PUSH_SUBSCRIPTION_KEY, 'true');
           } else {
-            // No active subscription - reset state
             setIsSubscribed(false);
             localStorage.removeItem(PUSH_SUBSCRIPTION_KEY);
             localStorage.removeItem('notification-prompt-dismissed');
           }
-        } catch {
+        } catch (err) {
+          console.error('Error checking subscription:', err);
           setIsSubscribed(false);
           localStorage.removeItem(PUSH_SUBSCRIPTION_KEY);
         }
@@ -62,10 +70,29 @@ export function usePushNotifications() {
 
   const registerServiceWorker = async (): Promise<ServiceWorkerRegistration | null> => {
     try {
-      const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
-      console.log('Service Worker registered:', registration);
+      // Check if already registered
+      let registration = await navigator.serviceWorker.getRegistration('/');
       
-      // Wait for the service worker to be ready
+      if (!registration) {
+        registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+        console.log('Service Worker registered:', registration);
+      }
+      
+      // Wait for the service worker to be active
+      if (registration.installing) {
+        await new Promise<void>((resolve) => {
+          registration!.installing!.addEventListener('statechange', (e) => {
+            if ((e.target as ServiceWorker).state === 'activated') resolve();
+          });
+        });
+      } else if (registration.waiting) {
+        await new Promise<void>((resolve) => {
+          registration!.waiting!.addEventListener('statechange', (e) => {
+            if ((e.target as ServiceWorker).state === 'activated') resolve();
+          });
+        });
+      }
+      
       await navigator.serviceWorker.ready;
       return registration;
     } catch (error) {
@@ -75,8 +102,22 @@ export function usePushNotifications() {
   };
 
   const subscribe = useCallback(async (): Promise<boolean> => {
-    if (!isSupported || !user) {
-      toast.error('الإشعارات غير مدعومة أو يجب تسجيل الدخول أولاً');
+    if (!user) {
+      toast.error('يجب تسجيل الدخول أولاً');
+      return false;
+    }
+
+    // Check iOS-specific requirements
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (isIOS && !isStandalone()) {
+      toast.error('على iOS يجب تثبيت التطبيق أولاً (مشاركة ← إضافة للشاشة الرئيسية)', {
+        duration: 6000,
+      });
+      return false;
+    }
+
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      toast.error('الإشعارات غير مدعومة في هذا المتصفح');
       return false;
     }
 
@@ -88,7 +129,7 @@ export function usePushNotifications() {
       setPermission(permissionResult);
 
       if (permissionResult !== 'granted') {
-        toast.error('تم رفض إذن الإشعارات');
+        toast.error('تم رفض إذن الإشعارات. يرجى تفعيلها من إعدادات المتصفح');
         return false;
       }
 
@@ -99,14 +140,19 @@ export function usePushNotifications() {
         return false;
       }
 
-      // Subscribe to push
-      const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
-      const subscription = await (registration as any).pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: applicationServerKey as BufferSource
-      });
+      // Check if already subscribed
+      let subscription = await registration.pushManager.getSubscription();
+      
+      if (!subscription) {
+        // Subscribe to push
+        const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: applicationServerKey as BufferSource,
+        });
+      }
 
-      console.log('Push subscription:', subscription);
+      console.log('Push subscription:', JSON.stringify(subscription.toJSON()));
 
       // Extract keys
       const p256dh = subscription.getKey('p256dh');
@@ -117,10 +163,9 @@ export function usePushNotifications() {
       }
 
       // Convert to base64
-      const p256dhArray = Array.from(new Uint8Array(p256dh));
-      const authArray = Array.from(new Uint8Array(auth));
-      const p256dhBase64 = btoa(String.fromCharCode.apply(null, p256dhArray));
-      const authBase64 = btoa(String.fromCharCode.apply(null, authArray));
+      const p256dhBase64 = btoa(String.fromCharCode(...new Uint8Array(p256dh)));
+      const authBase64 = btoa(String.fromCharCode(...new Uint8Array(auth)));
+
       // Save to database
       const { error } = await supabase
         .from('push_subscriptions')
@@ -128,9 +173,9 @@ export function usePushNotifications() {
           user_id: user.id,
           endpoint: subscription.endpoint,
           p256dh: p256dhBase64,
-          auth: authBase64
+          auth: authBase64,
         }, {
-          onConflict: 'endpoint'
+          onConflict: 'endpoint',
         });
 
       if (error) {
@@ -140,24 +185,29 @@ export function usePushNotifications() {
 
       setIsSubscribed(true);
       localStorage.setItem(PUSH_SUBSCRIPTION_KEY, 'true');
-      toast.success('تم تفعيل إشعارات Push بنجاح! 🔔');
+      toast.success('تم تفعيل الإشعارات بنجاح! 🔔');
 
-      // Show test notification
-      new Notification('رحلة الكتاب المقدس 📖', {
-        body: 'ستتلقى إشعاراً عند نشر موضوع جديد',
-        icon: '/favicon.png',
-        tag: 'welcome'
-      });
+      // Show a local test notification
+      try {
+        new Notification('رحلة الكتاب المقدس 📖', {
+          body: 'ستتلقى إشعاراً عند نشر موضوع جديد',
+          icon: '/favicon.png',
+          tag: 'welcome',
+        });
+      } catch {
+        // Local notification might fail, that's OK
+      }
 
       return true;
     } catch (error) {
       console.error('Error subscribing to push:', error);
-      toast.error('فشل في تفعيل الإشعارات');
+      const msg = error instanceof Error ? error.message : 'خطأ غير معروف';
+      toast.error(`فشل في تفعيل الإشعارات: ${msg}`);
       return false;
     } finally {
       setIsLoading(false);
     }
-  }, [isSupported, user]);
+  }, [user]);
 
   const unsubscribe = useCallback(async (): Promise<boolean> => {
     if (!user) return false;
@@ -166,20 +216,20 @@ export function usePushNotifications() {
 
     try {
       const registration = await navigator.serviceWorker.ready;
-      const subscription = await (registration as any).pushManager.getSubscription();
+      const subscription = await registration.pushManager.getSubscription();
 
       if (subscription) {
-        await subscription.unsubscribe();
-
-        // Remove from database
+        // Remove from database first
         await supabase
           .from('push_subscriptions')
           .delete()
           .eq('endpoint', subscription.endpoint);
+          
+        await subscription.unsubscribe();
       }
 
       setIsSubscribed(false);
-      localStorage.setItem(PUSH_SUBSCRIPTION_KEY, 'false');
+      localStorage.removeItem(PUSH_SUBSCRIPTION_KEY);
       toast.success('تم إيقاف الإشعارات');
       return true;
     } catch (error) {
@@ -193,18 +243,22 @@ export function usePushNotifications() {
 
   const sendNotificationToAll = useCallback(async (title: string, body: string, topicId?: string) => {
     try {
-      const { error } = await supabase.functions.invoke('send-push-notification', {
-        body: { title, body, topicId }
+      const response = await supabase.functions.invoke('send-push-notification', {
+        body: { title, body, topicId },
       });
 
-      if (error) {
-        console.error('Error sending notifications:', error);
+      if (response.error) {
+        console.error('Error sending notifications:', response.error);
+        toast.error('فشل في إرسال الإشعارات');
         return false;
       }
 
+      console.log('Push notification response:', response.data);
+      toast.success(`تم إرسال الإشعار (${response.data?.sent || 0}/${response.data?.total || 0})`);
       return true;
     } catch (error) {
       console.error('Error sending notifications:', error);
+      toast.error('فشل في إرسال الإشعارات');
       return false;
     }
   }, []);
@@ -212,10 +266,11 @@ export function usePushNotifications() {
   return {
     isSupported,
     isSubscribed,
+    isPWAInstalled,
     permission,
     isLoading,
     subscribe,
     unsubscribe,
-    sendNotificationToAll
+    sendNotificationToAll,
   };
 }
