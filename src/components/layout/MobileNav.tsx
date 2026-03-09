@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Trophy, User } from 'lucide-react';
+import { Home, BookOpen, Trophy, Swords, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -11,6 +11,7 @@ export function MobileNav() {
   const navItems = [
     { href: '/home', icon: Home, label: 'الرئيسية' },
     { href: '/topics', icon: BookOpen, label: 'المواضيع' },
+    { href: '/competitions', icon: Swords, label: 'المسابقة' },
     { href: '/leaderboard', icon: Trophy, label: 'الترتيب' },
     { href: '/profile', icon: null, label: 'حسابي', isProfile: true },
   ];
