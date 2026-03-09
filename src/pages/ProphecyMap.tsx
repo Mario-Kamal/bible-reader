@@ -19,12 +19,12 @@ const RELATIONSHIP_LABELS: Record<string, string> = {
 };
 
 const RELATIONSHIP_COLORS: Record<string, string> = {
-  fulfillment: 'hsl(var(--primary))',
-  parallel: 'hsl(var(--accent))',
-  continuation: 'hsl(142 76% 36%)',
-  contrast: 'hsl(0 84% 60%)',
-  typology: 'hsl(280 67% 55%)',
-  related: 'hsl(var(--muted-foreground))',
+  fulfillment: 'hsl(210 90% 50%)',
+  parallel: 'hsl(45 95% 50%)',
+  continuation: 'hsl(145 70% 42%)',
+  contrast: 'hsl(0 80% 55%)',
+  typology: 'hsl(275 70% 58%)',
+  related: 'hsl(220 10% 55%)',
 };
 
 interface NodePosition {
@@ -314,8 +314,8 @@ export default function ProphecyMap() {
                       d={`M ${source.x} ${source.y} Q ${cx} ${cy} ${target.x} ${target.y}`}
                       fill="none"
                       stroke={color}
-                      strokeWidth={isHighlighted ? 2.5 : 1}
-                      opacity={isDimmed ? 0.06 : isHighlighted ? 0.9 : 0.25}
+                      strokeWidth={isHighlighted ? 3 : 1.5}
+                      opacity={isDimmed ? 0.08 : isHighlighted ? 1 : 0.35}
                       strokeLinecap="round"
                       strokeDasharray={isHighlighted ? 'none' : '4 4'}
                       style={{
@@ -418,9 +418,9 @@ export default function ProphecyMap() {
                       cx={node.x}
                       cy={node.y}
                       r={nodeRadius}
-                      fill={node.isCompleted ? 'hsl(var(--primary))' : 'hsl(var(--card))'}
-                      stroke={isActive ? 'hsl(var(--primary))' : node.isCompleted ? 'hsl(var(--primary))' : 'hsl(var(--border))'}
-                      strokeWidth={isActive ? 2.5 : 1.5}
+                      fill={node.isCompleted ? 'hsl(210 90% 50%)' : 'hsl(var(--card))'}
+                      stroke={isActive ? 'hsl(210 90% 50%)' : node.isCompleted ? 'hsl(210 90% 60%)' : 'hsl(var(--border))'}
+                      strokeWidth={isActive ? 3 : 2}
                       filter={isActive ? 'url(#hover-glow)' : undefined}
                       style={{ transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}
                     />
@@ -451,7 +451,7 @@ export default function ProphecyMap() {
                         x={node.x}
                         y={node.y + 4}
                         textAnchor="middle"
-                        className="fill-muted-foreground text-[9px] font-bold"
+                        className="fill-foreground text-[10px] font-bold"
                         style={{ pointerEvents: 'none' }}
                       >
                         {index + 1}
@@ -461,13 +461,13 @@ export default function ProphecyMap() {
                     {/* Label */}
                     <text
                       x={node.x}
-                      y={node.y + (isActive ? 42 : 36)}
+                      y={node.y + (isActive ? 44 : 38)}
                       textAnchor="middle"
-                      className="fill-foreground font-medium"
+                      className="fill-foreground font-semibold"
                       style={{
                         pointerEvents: 'none',
-                        fontSize: isActive ? '11px' : '9px',
-                        fontWeight: isActive ? 700 : 500,
+                        fontSize: isActive ? '12px' : '10px',
+                        fontWeight: isActive ? 700 : 600,
                         transition: 'all 0.3s ease',
                       }}
                     >
@@ -488,11 +488,11 @@ export default function ProphecyMap() {
         </div>
 
         {/* Legend - bottom right */}
-        <div className="absolute bottom-20 md:bottom-6 right-4 bg-card/80 backdrop-blur-lg rounded-xl p-3 border shadow-lg text-[10px] space-y-1.5">
+        <div className="absolute bottom-20 md:bottom-6 right-4 bg-card/90 backdrop-blur-lg rounded-xl p-3 border shadow-lg text-[11px] space-y-2">
           {Object.entries(RELATIONSHIP_LABELS).map(([key, label]) => (
             <div key={key} className="flex items-center gap-2">
-              <div className="w-5 h-[2px] rounded-full" style={{ backgroundColor: RELATIONSHIP_COLORS[key] }} />
-              <span className="text-muted-foreground">{label}</span>
+              <div className="w-6 h-[3px] rounded-full" style={{ backgroundColor: RELATIONSHIP_COLORS[key] }} />
+              <span className="text-foreground font-medium">{label}</span>
             </div>
           ))}
         </div>
