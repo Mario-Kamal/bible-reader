@@ -51,7 +51,7 @@ export function CompetitionNotificationButton() {
           <Bell className="w-3 h-3" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" dir="rtl">
+      <DropdownMenuContent align="start">
         <DropdownMenuItem onClick={() => send('start')}>
           🏁 إشعار بداية المسابقة
         </DropdownMenuItem>
