@@ -315,9 +315,12 @@ export default function Admin() {
             onTopicsClick={() => setShowTopicsDialog(true)}
           />
 
-          {/* Test Notification */}
-          <div className="flex justify-end">
-            <TestNotificationButton />
+          {/* Notifications Section */}
+          <div className="space-y-4">
+            <div className="flex justify-end">
+              <TestNotificationButton />
+            </div>
+            <ScheduledNotifications />
           </div>
 
           {/* Add Topic Options */}
