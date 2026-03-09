@@ -323,6 +323,8 @@ ${usedVerseRefs}
     } catch (compErr) {
       console.log("Competition generation failed (non-critical):", compErr);
     }
+
+    return new Response(
       JSON.stringify({
         success: true,
         topicId: newTopic.id,
