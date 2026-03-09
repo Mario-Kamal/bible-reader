@@ -488,11 +488,11 @@ export default function ProphecyMap() {
         </div>
 
         {/* Legend - bottom right */}
-        <div className="absolute bottom-20 md:bottom-6 right-4 bg-card/80 backdrop-blur-lg rounded-xl p-3 border shadow-lg text-[10px] space-y-1.5">
+        <div className="absolute bottom-20 md:bottom-6 right-4 bg-card/90 backdrop-blur-lg rounded-xl p-3 border shadow-lg text-[11px] space-y-2">
           {Object.entries(RELATIONSHIP_LABELS).map(([key, label]) => (
             <div key={key} className="flex items-center gap-2">
-              <div className="w-5 h-[2px] rounded-full" style={{ backgroundColor: RELATIONSHIP_COLORS[key] }} />
-              <span className="text-muted-foreground">{label}</span>
+              <div className="w-6 h-[3px] rounded-full" style={{ backgroundColor: RELATIONSHIP_COLORS[key] }} />
+              <span className="text-foreground font-medium">{label}</span>
             </div>
           ))}
         </div>
