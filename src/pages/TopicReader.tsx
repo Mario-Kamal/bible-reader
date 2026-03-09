@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTopic, useUserProgress, useCompleteTopic } from '@/hooks/useTopics';
+import { usePatristicCommentaries } from '@/hooks/usePatristicCommentaries';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -9,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AIReader } from '@/components/reader/AIReader';
 import { ReadingEvaluator } from '@/components/reader/ReadingEvaluator';
+import { PatristicCommentariesSection } from '@/components/reader/PatristicCommentariesSection';
 import { ShareButton } from '@/components/share/ShareButton';
 import { ShareableTopicCard } from '@/components/share/ShareableTopicCard';
 import { ArrowRight, Check, BookOpen, Sparkles, Volume2, Mic, Image } from 'lucide-react';
