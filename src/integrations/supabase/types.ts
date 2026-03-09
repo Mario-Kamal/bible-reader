@@ -44,6 +44,50 @@ export type Database = {
         }
         Relationships: []
       }
+      patristic_commentaries: {
+        Row: {
+          commentary_text: string
+          created_at: string
+          id: string
+          order_index: number
+          saint_name: string
+          saint_title: string | null
+          source: string | null
+          topic_id: string
+          updated_at: string
+        }
+        Insert: {
+          commentary_text: string
+          created_at?: string
+          id?: string
+          order_index?: number
+          saint_name: string
+          saint_title?: string | null
+          source?: string | null
+          topic_id: string
+          updated_at?: string
+        }
+        Update: {
+          commentary_text?: string
+          created_at?: string
+          id?: string
+          order_index?: number
+          saint_name?: string
+          saint_title?: string | null
+          source?: string | null
+          topic_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patristic_commentaries_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

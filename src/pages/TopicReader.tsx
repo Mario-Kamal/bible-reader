@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTopic, useUserProgress, useCompleteTopic } from '@/hooks/useTopics';
+import { usePatristicCommentaries } from '@/hooks/usePatristicCommentaries';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -9,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AIReader } from '@/components/reader/AIReader';
 import { ReadingEvaluator } from '@/components/reader/ReadingEvaluator';
+import { PatristicCommentariesSection } from '@/components/reader/PatristicCommentariesSection';
 import { ShareButton } from '@/components/share/ShareButton';
 import { ShareableTopicCard } from '@/components/share/ShareableTopicCard';
 import { ArrowRight, Check, BookOpen, Sparkles, Volume2, Mic, Image } from 'lucide-react';
@@ -19,6 +21,7 @@ export default function TopicReader() {
   const navigate = useNavigate();
   const { data: topic, isLoading } = useTopic(topicId);
   const { data: progress } = useUserProgress();
+  const { data: commentaries = [] } = usePatristicCommentaries(topicId);
   const completeTopic = useCompleteTopic();
   
   const [showCompletion, setShowCompletion] = useState(false);
@@ -200,6 +203,9 @@ export default function TopicReader() {
                   </p>
                 </Card>
               )}
+
+              {/* Patristic Commentaries */}
+              <PatristicCommentariesSection commentaries={commentaries} />
             </TabsContent>
 
             {/* Listen Tab */}
