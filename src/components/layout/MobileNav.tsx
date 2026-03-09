@@ -3,6 +3,7 @@ import { Home, BookOpen, Trophy, Swords, GitBranch, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { DarkModeToggle } from '@/components/ui/DarkModeToggle';
 
 export function MobileNav() {
   const location = useLocation();
@@ -18,6 +19,13 @@ export function MobileNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border safe-bottom md:hidden">
+      {/* Dark mode toggle - positioned at top right */}
+      <div className="absolute -top-10 right-2">
+        <div className="bg-card/95 backdrop-blur rounded-full shadow-md border border-border">
+          <DarkModeToggle />
+        </div>
+      </div>
+      
       <div className="flex items-center justify-around h-16">
         {navItems.map((item) => {
           const isActive = location.pathname === item.href || 
@@ -61,3 +69,4 @@ export function MobileNav() {
     </nav>
   );
 }
+
