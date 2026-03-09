@@ -87,6 +87,30 @@ export default function Home() {
 
         {/* Content */}
         <div className="px-4 pt-20 pb-6 max-w-lg mx-auto space-y-6">
+          {/* Streak Banner */}
+          {(profile?.current_streak || 0) > 0 && (
+            <Card className="p-4 border-accent/30 bg-accent/5">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">🔥</span>
+                <div className="flex-1">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-2xl font-bold text-accent">{profile?.current_streak}</span>
+                    <span className="text-sm text-muted-foreground">يوم متتالي</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {(profile?.current_streak || 0) >= 7 ? 'أداء رائع! استمر في القراءة 🌟' : 'استمر في القراءة اليومية!'}
+                  </p>
+                </div>
+                {(profile?.longest_streak || 0) > 0 && (
+                  <div className="text-center text-xs text-muted-foreground border-r pr-3">
+                    <div className="font-bold text-primary text-base">{profile?.longest_streak}</div>
+                    <div>أطول سلسلة</div>
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
+
           {/* Daily Verse */}
           <DailyVerse />
 
