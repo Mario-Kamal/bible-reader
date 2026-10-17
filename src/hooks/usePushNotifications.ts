@@ -4,7 +4,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 const PUSH_SUBSCRIPTION_KEY = 'push-notification-subscribed';
-const VAPID_KEY_CACHE = 'vapid-public-key';
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -22,26 +21,20 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 }
 
 function isStandalone(): boolean {
+  const safariNavigator = navigator as Navigator & { standalone?: boolean };
   return (
     window.matchMedia('(display-mode: standalone)').matches ||
-    (navigator as any).standalone === true
+    safariNavigator.standalone === true
   );
 }
 
 async function getVapidPublicKey(): Promise<string | null> {
-  // Check cache first
-  const cached = localStorage.getItem(VAPID_KEY_CACHE);
-  if (cached) return cached;
-
   try {
     const { data, error } = await supabase.functions.invoke('get-vapid-key');
     if (error) throw error;
     
     const key = data?.publicKey;
-    if (key) {
-      localStorage.setItem(VAPID_KEY_CACHE, key);
-      return key;
-    }
+    if (typeof key === 'string' && key) return key;
     return null;
   } catch (err) {
     console.error('Failed to fetch VAPID key:', err);
@@ -75,7 +68,7 @@ export function usePushNotifications() {
           } else {
             setIsSubscribed(false);
             localStorage.removeItem(PUSH_SUBSCRIPTION_KEY);
-            localStorage.removeItem('notification-prompt-dismissed');
+            sessionStorage.removeItem('notification-prompt-dismissed');
           }
         } catch (err) {
           console.error('Error checking subscription:', err);
@@ -213,7 +206,7 @@ export function usePushNotifications() {
 
       try {
         new Notification('رحلة الكتاب المقدس 📖', {
-          body: 'ستتلقى إشعاراً عند نشر قراءة جديدة',
+          body: 'إصحاح يومي الساعة ١:٠٠ بعد منتصف الليل وآية اليوم الساعة ١٠:٠٠ صباحاً (بتوقيت القاهرة)',
           icon: '/favicon.png',
           tag: 'welcome',
         });
@@ -224,8 +217,6 @@ export function usePushNotifications() {
       return true;
     } catch (error) {
       console.error('Error subscribing to push:', error);
-      // Clear cached key in case it's stale
-      localStorage.removeItem(VAPID_KEY_CACHE);
       const msg = error instanceof Error ? error.message : 'خطأ غير معروف';
       toast.error(`فشل في تفعيل الإشعارات: ${msg}`);
       return false;

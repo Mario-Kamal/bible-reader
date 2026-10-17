@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { buildChapterPrompt, parseChapterContent } from "../_shared/chapter-content.ts";
+import { getCairoDateTime } from "../_shared/cairo-time.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,15 +14,31 @@ serve(async (req) => {
   }
 
   try {
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!supabaseServiceKey) throw new Error("SUPABASE_SERVICE_ROLE_KEY is not configured");
+    if (req.headers.get("Authorization") !== `Bearer ${supabaseServiceKey}`) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const requestBody = await req.json();
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!lovableApiKey) throw new Error("LOVABLE_API_KEY is not configured");
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const cairoNow = new Date(Date.now() + 2 * 60 * 60 * 1000);
-    const todayStr = cairoNow.toISOString().split("T")[0];
+    const { date: todayStr, hour } = getCairoDateTime();
+
+    if (requestBody.scheduled === true && hour !== 0) {
+      return new Response(
+        JSON.stringify({ success: true, skipped: true, reason: "Not midnight in Cairo" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const dayStart = `${todayStr}T00:00:00.000Z`;
     const dayEnd = `${todayStr}T23:59:59.999Z`;
 
@@ -128,26 +145,6 @@ serve(async (req) => {
         .eq("id", newTopic.id);
       if (cleanupError) console.error("Failed to remove incomplete chapter:", cleanupError);
       throw new Error("Failed to save chapter verses");
-    }
-
-    try {
-      const notificationResponse = await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${supabaseServiceKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: "📖 إصحاح اليوم",
-          body: reading.title,
-          topicId: newTopic.id,
-        }),
-      });
-      if (!notificationResponse.ok) {
-        console.error("Chapter notification failed:", notificationResponse.status, await notificationResponse.text());
-      }
-    } catch (notificationError) {
-      console.error("Chapter notification request failed:", notificationError);
     }
 
     for (const functionName of ["generate-competition", "generate-topic-links"]) {

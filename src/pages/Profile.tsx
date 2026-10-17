@@ -186,7 +186,9 @@ export default function Profile() {
                 <Bell className="w-5 h-5 text-primary" />
                 <div>
                   <p className="font-medium">الإشعارات اليومية</p>
-                  <p className="text-xs text-muted-foreground">تذكير بإصحاح القراءة الجديد</p>
+                  <p className="text-xs text-muted-foreground">
+                    إصحاح جديد يومياً ١:٠٠ بعد منتصف الليل، وآية اليوم ١٠:٠٠ صباحاً (بتوقيت القاهرة)
+                  </p>
                 </div>
               </div>
               <PushNotificationToggle />

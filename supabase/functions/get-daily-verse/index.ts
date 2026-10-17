@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getCairoDateTime } from "../_shared/cairo-time.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -47,13 +48,18 @@ serve(async (req) => {
   }
 
   try {
+    const requestBody = await req.json().catch(() => ({}));
+    const { date: dateStr, hour } = getCairoDateTime();
+    if (requestBody.scheduled === true && hour !== 10) {
+      return new Response(
+        JSON.stringify({ success: true, skipped: true, reason: "Not 10 AM in Cairo" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Get today's date in local format
-    const today = new Date();
-    const dateStr = today.toISOString().split("T")[0];
 
     // Check if we already have a verse for today
     const { data: existingVerse, error: fetchError } = await supabase
@@ -73,9 +79,9 @@ serve(async (req) => {
     }
 
     // Generate a verse for today using date-based selection for consistency
+    const [year, month, day] = dateStr.split("-").map(Number);
     const dayOfYear = Math.floor(
-      (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) /
-        (1000 * 60 * 60 * 24)
+      (Date.UTC(year, month - 1, day) - Date.UTC(year, 0, 0)) / (1000 * 60 * 60 * 24)
     );
     const verseIndex = dayOfYear % bibleVerses.length;
     const selectedVerse = bibleVerses[verseIndex];

@@ -196,18 +196,56 @@ serve(async (req) => {
   }
 
   try {
-    const { title, body, topicId } = await req.json();
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error("Supabase URL or service role key is not configured");
+    }
+    const authorization = req.headers.get("Authorization");
+    if (authorization !== `Bearer ${supabaseServiceKey}`) {
+      const accessToken = authorization?.replace(/^Bearer\s+/i, "");
+      const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+      if (!accessToken || !supabaseAnonKey) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const authClient = createClient(supabaseUrl, supabaseAnonKey);
+      const { data: { user }, error: authError } = await authClient.auth.getUser(accessToken);
+      if (authError || !user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const roleClient = createClient(supabaseUrl, supabaseServiceKey);
+      const { data: adminRole, error: roleError } = await roleClient
+        .from("user_roles")
+        .select("user_id")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      if (roleError) throw roleError;
+      if (!adminRole) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    const { title, body, topicId, tag, url } = await req.json();
     const vapidPublicKey = Deno.env.get("VAPID_PUBLIC_KEY");
     const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY");
 
     if (!vapidPublicKey || !vapidPrivateKey) {
-      console.log("VAPID keys not configured");
+      console.error("VAPID keys are not configured");
       return new Response(
-        JSON.stringify({ success: true, message: "VAPID keys not configured", sent: 0 }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        JSON.stringify({ error: "Push notifications are not configured on the server" }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -236,8 +274,8 @@ serve(async (req) => {
       body: body || "إصحاح جديد متاح للقراءة!",
       icon: "/favicon.png",
       badge: "/favicon.png",
-      tag: "new-topic",
-      data: { url: "/home", topicId },
+      tag: tag || "new-topic",
+      data: { url: url || (topicId ? `/topic/${topicId}` : "/home"), topicId },
     });
 
     let successCount = 0;
@@ -287,12 +325,15 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        success: true,
+        success: successCount > 0,
         sent: successCount,
         total: subscriptions.length,
         cleaned: failedSubscriptions.length,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      {
+        status: successCount === 0 && subscriptions.length > 0 ? 502 : 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   } catch (error) {
     console.error("Error in send-push-notification:", error);

@@ -36,7 +36,8 @@ export function PushNotificationToggle({ className }: PushNotificationToggleProp
       size="sm"
       onClick={handleToggle}
       className={className}
-      disabled={permission === 'denied' || isLoading}
+      disabled={isLoading}
+      title={permission === 'denied' ? 'اسمح بالإشعارات من إعدادات الموقع في المتصفح أولاً' : undefined}
     >
       {isLoading ? (
         <>
@@ -51,7 +52,7 @@ export function PushNotificationToggle({ className }: PushNotificationToggleProp
       ) : permission === 'denied' ? (
         <>
           <BellOff className="w-4 h-4 ml-2" />
-          الإشعارات محظورة
+          افتح إعدادات المتصفح للسماح
         </>
       ) : (
         <>

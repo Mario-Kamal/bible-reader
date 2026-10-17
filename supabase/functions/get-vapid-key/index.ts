@@ -13,36 +13,12 @@ serve(async (req) => {
 
   try {
     const vapidPublicKey = Deno.env.get("VAPID_PUBLIC_KEY");
+    const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY");
 
-    if (!vapidPublicKey) {
-      // Generate new VAPID keys if not set
-      const keyPair = await crypto.subtle.generateKey(
-        { name: "ECDSA", namedCurve: "P-256" },
-        true,
-        ["sign", "verify"]
-      );
-
-      const publicKeyRaw = new Uint8Array(
-        await crypto.subtle.exportKey("raw", keyPair.publicKey)
-      );
-      const privateKeyJwk = await crypto.subtle.exportKey("jwk", keyPair.privateKey);
-
-      // Base64url encode
-      let binary = "";
-      for (const byte of publicKeyRaw) binary += String.fromCharCode(byte);
-      const publicKeyBase64url = btoa(binary)
-        .replace(/\+/g, "-")
-        .replace(/\//g, "_")
-        .replace(/=+$/, "");
-
+    if (!vapidPublicKey || !vapidPrivateKey) {
       return new Response(
-        JSON.stringify({
-          publicKey: publicKeyBase64url,
-          needsSetup: true,
-          privateKeyD: privateKeyJwk.d,
-          message: "New keys generated. Set VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY secrets.",
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Push notifications are not configured on the server" }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 

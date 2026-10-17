@@ -6,7 +6,7 @@ self.addEventListener('push', function(event) {
   
   let data = {
     title: 'رحلة الكتاب المقدس 📖',
-    body: 'موضوع جديد متاح للقراءة!',
+    body: 'إصحاح جديد متاح للقراءة!',
     icon: '/favicon.png',
     badge: '/favicon.png',
     tag: 'new-topic',
