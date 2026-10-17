@@ -18,6 +18,7 @@ import { DarkModeToggle } from '@/components/ui/DarkModeToggle';
 import { BookmarkButton } from '@/components/bookmarks/BookmarkButton';
 import { ArrowRight, Check, BookOpen, Sparkles, Volume2, Mic, Image } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getChapterPassage } from '@/lib/chapterPassage';
 
 export default function TopicReader() {
   const { topicId } = useParams();
@@ -34,8 +35,8 @@ export default function TopicReader() {
   const isCompleted = progress?.some(p => p.topic_id === topicId);
   const sortedVerses = topic?.verses?.sort((a, b) => a.order_index - b.order_index) || [];
   
-  // Combine all verses text for reading practice
-  const fullText = sortedVerses.map(v => v.verse_text).join(' ');
+  const passage = getChapterPassage(sortedVerses);
+  const fullText = passage.text;
 
   const handleComplete = async () => {
     if (!topic || isCompleted) return;
@@ -66,8 +67,8 @@ export default function TopicReader() {
         <div className="min-h-screen flex items-center justify-center" dir="rtl">
           <div className="text-center">
             <BookOpen className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <h2 className="text-xl font-semibold mb-2">النبوة غير موجودة</h2>
-            <Button onClick={() => navigate('/topics')}>العودة للنبوات</Button>
+            <h2 className="text-xl font-semibold mb-2">الإصحاح غير موجود</h2>
+            <Button onClick={() => navigate('/topics')}>العودة للقراءات</Button>
           </div>
         </div>
       </AppLayout>
@@ -84,7 +85,7 @@ export default function TopicReader() {
               <Sparkles className="w-12 h-12 text-accent-foreground" />
             </div>
             <h1 className="text-3xl font-bold text-primary-foreground mb-2">ممتاز!</h1>
-            <p className="text-primary-foreground/80 mb-6">لقد أكملت هذا الموضوع</p>
+            <p className="text-primary-foreground/80 mb-6">لقد أكملت قراءة هذا الإصحاح</p>
             <PointsBadge points={topic.points_reward} size="lg" animated className="mb-8" />
             <Button 
               size="lg" 
@@ -110,9 +111,7 @@ export default function TopicReader() {
             </Button>
             <div className="flex-1 min-w-0">
               <h1 className="font-semibold truncate">{topic.title}</h1>
-              <p className="text-xs text-muted-foreground">
-                {sortedVerses.length} آية
-              </p>
+              <p className="text-xs text-muted-foreground">{passage.reference}</p>
             </div>
             <DarkModeToggle />
             <BookmarkButton topicId={topic.id} />
@@ -126,8 +125,8 @@ export default function TopicReader() {
             />
             <ShareButton
               title={topic.title}
-              text={topic.description || 'موضوع من رحلة الكتاب المقدس'}
-              verse={sortedVerses[0]?.verse_text}
+              text={topic.description || 'إصحاح من رحلة الكتاب المقدس'}
+              verse={fullText}
             />
             <ReaderSettingsButton fontSize={fontSize} setFontSize={setFontSize} theme={theme} setTheme={setTheme} />
             {!isCompleted && (
@@ -171,32 +170,15 @@ export default function TopicReader() {
                 </p>
               )}
 
-              {/* Verses */}
-              <div className="space-y-4">
-                {sortedVerses.map((verse, index) => (
-                  <Card 
-                    key={verse.id} 
-                    className="p-5 animate-fade-in"
-                    style={{ animationDelay: `${index * 100}ms` }}
-                  >
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary">
-                          {index + 1}
-                        </div>
-                        <div className="text-sm font-medium text-primary">
-                          ({verse.book} {verse.chapter}: {verse.verse_start}
-                          {verse.verse_end && verse.verse_end !== verse.verse_start && `-${verse.verse_end}`})
-                        </div>
-                      </div>
-                      <AIReader text={verse.verse_text} />
-                    </div>
-                    <p className="scripture-text pr-11" style={{ fontSize: `${fontSize}px`, lineHeight: 1.8 }}>
-                      {verse.verse_text}
-                    </p>
-                  </Card>
-                ))}
-              </div>
+              <Card className="p-5 animate-fade-in">
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <span className="text-sm font-medium text-primary">{passage.reference}</span>
+                  <AIReader text={fullText} />
+                </div>
+                <p className="scripture-text" style={{ fontSize: `${fontSize}px`, lineHeight: 1.8 }}>
+                  {fullText}
+                </p>
+              </Card>
 
               {/* Interpretation */}
               {topic.interpretation && (
@@ -219,7 +201,7 @@ export default function TopicReader() {
             <TabsContent value="listen" className="space-y-6 mt-6">
               <Card className="p-6 text-center">
                 <Volume2 className="w-12 h-12 mx-auto text-primary mb-4" />
-                <h3 className="font-semibold mb-2">استمع للموضوع</h3>
+                <h3 className="font-semibold mb-2">استمع للإصحاح</h3>
                 <p className="text-sm text-muted-foreground mb-4">
                   {topic.audio_url ? 'تسجيل من المعلم' : 'قراءة بالذكاء الاصطناعي'}
                 </p>
@@ -230,7 +212,7 @@ export default function TopicReader() {
                   <div className="space-y-4">
                     <AIReader text={fullText} />
                     <p className="text-xs text-muted-foreground">
-                      استمع للموضوع كاملاً
+                      استمع للإصحاح كاملاً
                     </p>
                   </div>
                 )}
@@ -242,23 +224,11 @@ export default function TopicReader() {
                   <BookOpen className="w-4 h-4 text-primary" />
                   النص الكامل
                 </h4>
-                <div className="space-y-4">
-                  {sortedVerses.map((verse, index) => (
-                    <div key={verse.id} className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary mt-1">
-                        {index + 1}
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-xs font-medium text-primary mb-1">
-                          ({verse.book} {verse.chapter}: {verse.verse_start}
-                          {verse.verse_end && verse.verse_end !== verse.verse_start && `-${verse.verse_end}`})
-                        </p>
-                        <p className="scripture-text leading-relaxed" style={{ fontSize: `${Math.max(fontSize - 2, 12)}px`, lineHeight: 1.8 }}>
-                          {verse.verse_text}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                <div>
+                  <p className="text-xs font-medium text-primary mb-2">{passage.reference}</p>
+                  <p className="scripture-text leading-relaxed" style={{ fontSize: `${Math.max(fontSize - 2, 12)}px`, lineHeight: 1.8 }}>
+                    {fullText}
+                  </p>
                 </div>
               </Card>
 
@@ -290,36 +260,15 @@ export default function TopicReader() {
                 <div className="p-4 bg-muted/50 rounded-lg mb-6">
                   <p className="text-sm font-medium mb-2">النص المطلوب قراءته:</p>
                   <p className="scripture-text text-sm leading-relaxed">
-                    {sortedVerses[0]?.verse_text || fullText.slice(0, 200)}
+                    {fullText.slice(0, 200)}
                   </p>
                 </div>
 
                 <ReadingEvaluator 
-                  expectedText={sortedVerses[0]?.verse_text || fullText.slice(0, 200)}
+                  expectedText={fullText.slice(0, 200)}
                 />
               </Card>
 
-              {sortedVerses.length > 1 && (
-                <div className="space-y-4">
-                  <h4 className="font-semibold">تدرب على كل آية</h4>
-                  {sortedVerses.map((verse, index) => (
-                    <Card key={verse.id} className="p-4">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
-                          {index + 1}
-                        </div>
-                        <span className="text-sm font-medium text-primary">
-                          ({verse.book} {verse.chapter}: {verse.verse_start})
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                        {verse.verse_text}
-                      </p>
-                      <ReadingEvaluator expectedText={verse.verse_text} />
-                    </Card>
-                  ))}
-                </div>
-              )}
             </TabsContent>
             */}
           </Tabs>
@@ -347,7 +296,7 @@ export default function TopicReader() {
               ) : (
                 <>
                   <Check className="w-5 h-5 ml-2" />
-                  لقد قرأت هذا الموضوع
+                  لقد قرأت هذا الإصحاح
                 </>
               )}
             </Button>

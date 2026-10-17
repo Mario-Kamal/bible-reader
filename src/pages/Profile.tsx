@@ -45,7 +45,7 @@ export default function Profile() {
   const stats = [
     {
       icon: BookOpen,
-      label: 'مواضيع مقروءة',
+      label: 'إصحاحات مقروءة',
       value: completedCount,
       color: 'text-primary',
     },
@@ -111,15 +111,15 @@ export default function Profile() {
               <div className="flex-1 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">مكتمل</span>
-                  <span className="font-medium">{completedCount} موضوع</span>
+                  <span className="font-medium">{completedCount} إصحاح</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">متبقي</span>
-                  <span className="font-medium">{totalTopics - completedCount} موضوع</span>
+                  <span className="font-medium">{totalTopics - completedCount} إصحاح</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">الإجمالي</span>
-                  <span className="font-medium">{totalTopics} موضوع</span>
+                  <span className="font-medium">{totalTopics} إصحاح</span>
                 </div>
               </div>
             </div>
@@ -186,7 +186,7 @@ export default function Profile() {
                 <Bell className="w-5 h-5 text-primary" />
                 <div>
                   <p className="font-medium">الإشعارات اليومية</p>
-                  <p className="text-xs text-muted-foreground">تذكير بموضوع القراءة الجديد</p>
+                  <p className="text-xs text-muted-foreground">تذكير بإصحاح القراءة الجديد</p>
                 </div>
               </div>
               <PushNotificationToggle />

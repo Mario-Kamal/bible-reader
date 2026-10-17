@@ -163,7 +163,7 @@ export default function ReadingPlan() {
             <Card className="text-center p-3">
               <BookOpen className="h-5 w-5 mx-auto text-primary mb-1" />
               <div className="text-lg font-bold">{profile?.topics_completed || 0}</div>
-              <div className="text-xs text-muted-foreground">نبوة مكتملة</div>
+              <div className="text-xs text-muted-foreground">إصحاح مكتمل</div>
             </Card>
             <Card className="text-center p-3">
               <Trophy className="h-5 w-5 mx-auto text-yellow-500 mb-1" />
@@ -234,7 +234,7 @@ export default function ReadingPlan() {
                   {isEnrolled && (
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between text-sm">
-                        <span>{status.completed} / {week.topics_count} نبوات</span>
+                        <span>{status.completed} / {week.topics_count} إصحاحات</span>
                         <span className="text-muted-foreground">
                           {Math.round((status.completed / week.topics_count) * 100)}%
                         </span>

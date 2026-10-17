@@ -22,7 +22,7 @@ export default function Bookmarks() {
               <Bookmark className="w-6 h-6" />
               <h1 className="text-2xl font-bold">المفضلة</h1>
             </div>
-            <p className="text-primary-foreground/70">{bookmarks.length} موضوع محفوظ</p>
+            <p className="text-primary-foreground/70">{bookmarks.length} إصحاح محفوظ</p>
           </div>
         </header>
 
@@ -38,10 +38,10 @@ export default function Bookmarks() {
               <BookOpen className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
               <h2 className="text-lg font-semibold mb-2">لا توجد مفضلة بعد</h2>
               <p className="text-muted-foreground mb-6">
-                افتح أي موضوع واضغط على زر الحفظ لإضافته هنا.
+                افتح أي إصحاح واضغط على زر الحفظ لإضافته هنا.
               </p>
               <Button asChild>
-                <Link to="/topics">استعراض المواضيع</Link>
+                <Link to="/topics">استعراض الإصحاحات</Link>
               </Button>
             </div>
           ) : (

@@ -16,7 +16,6 @@ interface TopicCardProps {
 }
 
 export function TopicCard({ topic, isCompleted, isLocked, index, showDate = false }: TopicCardProps) {
-  const verseCount = topic.verses?.length || 0;
   const scheduledDate = topic.scheduled_for ? new Date(topic.scheduled_for) : null;
 
   if (isLocked) {
@@ -29,7 +28,7 @@ export function TopicCard({ topic, isCompleted, isLocked, index, showDate = fals
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-foreground/60 truncate">{topic.title}</h3>
-            <p className="text-sm text-muted-foreground">موضوع الغد - عُد لاحقاً</p>
+            <p className="text-sm text-muted-foreground">إصحاح الغد - عُد لاحقاً</p>
           </div>
         </div>
       </Card>
@@ -64,7 +63,7 @@ export function TopicCard({ topic, isCompleted, isLocked, index, showDate = fals
               )}
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>{verseCount} آية</span>
+              <span>إصحاح كامل</span>
               {showDate && scheduledDate && (
                 <>
                   <span>•</span>

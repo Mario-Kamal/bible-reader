@@ -213,7 +213,7 @@ export function usePushNotifications() {
 
       try {
         new Notification('رحلة الكتاب المقدس 📖', {
-          body: 'ستتلقى إشعاراً عند نشر نبوة جديدة',
+          body: 'ستتلقى إشعاراً عند نشر قراءة جديدة',
           icon: '/favicon.png',
           tag: 'welcome',
         });

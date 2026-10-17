@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { GitBranch, Sparkles, X, ExternalLink, Check, Loader2 } from 'lucide-react';
 
 const RELATIONSHIP_LABELS: Record<string, string> = {
-  fulfillment: 'تحقيق',
+  fulfillment: 'ارتباط نصي',
   parallel: 'تشابه',
   continuation: 'استمرار',
   contrast: 'تضاد',
@@ -35,7 +35,7 @@ interface NodePosition {
   isCompleted: boolean;
 }
 
-export default function ProphecyMap() {
+export default function ReadingMap() {
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
   const { data: topics, isLoading: topicsLoading } = useTopics();
@@ -185,9 +185,9 @@ export default function ProphecyMap() {
           <div className="flex items-center gap-3 bg-card/80 backdrop-blur-lg rounded-2xl px-4 py-2.5 border shadow-lg">
             <GitBranch className="w-5 h-5 text-primary" />
             <div>
-              <h1 className="text-sm font-bold">خريطة النبوات</h1>
+              <h1 className="text-sm font-bold">خريطة القراءات</h1>
               <p className="text-[10px] text-muted-foreground">
-                {publishedTopics.length} نبوة · {validLinks.length} رابط
+                {publishedTopics.length} إصحاح · {validLinks.length} رابط
               </p>
             </div>
           </div>
@@ -233,7 +233,7 @@ export default function ProphecyMap() {
 
         {nodes.length === 0 ? (
           <div className="flex items-center justify-center h-full">
-            <p className="text-muted-foreground">لا توجد نبوات منشورة بعد</p>
+            <p className="text-muted-foreground">لا توجد قراءات منشورة بعد</p>
           </div>
         ) : (
           <svg
@@ -499,13 +499,13 @@ export default function ProphecyMap() {
               onClick={() => navigate(`/topic/${selectedTopic.id}`)}
             >
               <ExternalLink className="w-4 h-4" />
-              قراءة النبوة
+              قراءة الإصحاح
             </Button>
 
             {selectedConnections.length > 0 && (
               <div className="space-y-3">
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  النبوات المرتبطة ({selectedConnections.length})
+                  الإصحاحات المرتبطة ({selectedConnections.length})
                 </h3>
                 {selectedConnections.map(link => {
                   const otherId = link.source_topic_id === selectedNode ? link.target_topic_id : link.source_topic_id;
@@ -542,7 +542,7 @@ export default function ProphecyMap() {
 
             {selectedConnections.length === 0 && (
               <p className="text-sm text-muted-foreground text-center py-4">
-                لا توجد روابط لهذه النبوة بعد
+                لا توجد روابط لهذا الإصحاح بعد
               </p>
             )}
           </div>

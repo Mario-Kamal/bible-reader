@@ -1,9 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { buildChapterPrompt, parseChapterContent } from "../_shared/chapter-content.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-version, x-supabase-client-runtime-version",
 };
 
 serve(async (req) => {
@@ -13,122 +14,89 @@ serve(async (req) => {
 
   try {
     const { topicTitle } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (typeof topicTitle !== "string" || !topicTitle.trim()) {
+      return new Response(
+        JSON.stringify({ error: "مرجع الإصحاح مطلوب" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
+    if (!lovableApiKey) throw new Error("LOVABLE_API_KEY is not configured");
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const { data: recentTopics, error: recentTopicsError } = await supabase
+      .from("topics")
+      .select("verses(book, chapter)")
+      .order("scheduled_for", { ascending: false, nullsFirst: false })
+      .limit(200);
+    if (recentTopicsError) throw recentTopicsError;
 
-    // Fetch used verses to avoid repetition
-    const { data: pastVerses } = await supabase
-      .from("verses")
-      .select("book, chapter, verse_start")
-      .limit(500);
-    
-    const usedVerseRefs = pastVerses?.map(v => `${v.book} ${v.chapter}:${v.verse_start}`).join(", ") || "لا يوجد";
+    const usedChapterReferences = [
+      ...new Set(
+        (recentTopics || []).flatMap((topic: any) =>
+          (topic.verses || []).map((verse: any) => `${verse.book} ${verse.chapter}`)
+        ),
+      ),
+    ];
 
-    const systemPrompt = `أنت عالم لاهوتي قبطي أرثوذكسي متخصص في نبوات العهد القديم عن المسيح.
-مهمتك: إنشاء محتوى عن نبوة مسيانية بأسلوب تفاسير موقع الأنبا تكلا هيمانوت.
-
-عند إعطائك نبوة أو موضوع:
-1. اكتب آية أو آيتين من العهد القديم (النبوة) بالنص الكامل (ترجمة فاندايك)
-2. اكتب آية أو آيتين من العهد الجديد (التحقيق) بالنص الكامل
-3. اكتب تفسيراً روحياً أرثوذكسياً يناسب الصوم الكبير (3-5 فقرات)
-   - اشرح النبوة وكيف تحققت في المسيح
-   - اذكر تعليقات آباء الكنيسة إن أمكن
-
-**هام جداً لمنع التكرار**:
-الآيات المذكورة أدناه تم استخدامها سابقاً في أيام أخرى، **يجب عليك اختيار آيات/شواهد مختلفة تماماً** حتى لو كانت لنفس الموضوع:
-${usedVerseRefs}
-
-أجب بصيغة JSON:
-{
-  "title": "عنوان النبوة",
-  "description": "وصف مختصر",
-  "interpretation": "التفسير الروحي...",
-  "verses": [
-    {
-      "book": "اسم السفر",
-      "chapter": رقم الإصحاح,
-      "verse_start": رقم الآية,
-      "verse_end": null أو رقم,
-      "verse_text": "نص الآية الكامل"
-    }
-  ]
-}
-
-ضع آيات العهد القديم أولاً ثم العهد الجديد. 2-4 آيات إجمالاً.`;
-
-    const response = await fetch(
-      "https://ai.gateway.lovable.dev/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: `أريد نبوة عن: ${topicTitle}` },
-          ],
-        }),
-      }
-    );
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${lovableApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: buildChapterPrompt(usedChapterReferences) },
+          {
+            role: "user",
+            content: `أعدّ الإصحاح المطلوب تحديداً: "${topicTitle.trim()}". لا تستبدل الإصحاح بفكرة عامة أو مجموعة شواهد.`,
+          },
+        ],
+      }),
+    });
 
     if (!response.ok) {
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: "تم تجاوز الحد المسموح، حاول لاحقاً" }),
-          {
-            status: 429,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
       if (response.status === 402) {
         return new Response(
           JSON.stringify({ error: "يرجى إضافة رصيد للاستمرار" }),
-          {
-            status: 402,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      throw new Error("AI gateway error");
+      console.error("AI gateway error:", response.status, await response.text());
+      throw new Error(`AI gateway error: ${response.status}`);
     }
 
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content;
+    if (typeof content !== "string" || !content) throw new Error("No AI content");
 
-    if (!content) {
-      throw new Error("No content in response");
+    const reading = parseChapterContent(content);
+    const chapterReference = `${reading.verses[0].book} ${reading.verses[0].chapter}`;
+    if (usedChapterReferences.includes(chapterReference)) {
+      throw new Error(`AI selected a chapter that was already used: ${chapterReference}`);
     }
 
-    let jsonContent = content;
-    const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (jsonMatch) {
-      jsonContent = jsonMatch[1];
-    }
-
-    const parsedTopic = JSON.parse(jsonContent.trim());
-
-    return new Response(JSON.stringify(parsedTopic), {
+    return new Response(JSON.stringify(reading), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Error generating topic:", error);
+    console.error("Error preparing chapter:", error);
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : "حدث خطأ",
       }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 });

@@ -39,7 +39,7 @@ export function useGenerateTopicLinks() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['topic-links'] });
-      toast.success(`تم توليد ${data?.count || 0} رابط بين النبوات`);
+      toast.success(`تم توليد ${data?.count || 0} رابطاً بين الإصحاحات`);
     },
     onError: (error) => {
       toast.error('فشل في توليد الروابط');

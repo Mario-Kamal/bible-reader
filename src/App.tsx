@@ -17,7 +17,7 @@ import Admin from "./pages/Admin";
 import Install from "./pages/Install";
 import ReadingPlan from "./pages/ReadingPlan";
 import Competitions from "./pages/Competitions";
-import ProphecyMap from "./pages/ProphecyMap";
+import ReadingMap from "./pages/ReadingMap";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -70,7 +70,8 @@ const AppRoutes = () => (
     <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
     <Route path="/reading-plan" element={<ProtectedRoute><ReadingPlan /></ProtectedRoute>} />
     <Route path="/competitions" element={<ProtectedRoute><Competitions /></ProtectedRoute>} />
-    <Route path="/prophecy-map" element={<ProtectedRoute><ProphecyMap /></ProtectedRoute>} />
+    <Route path="/reading-map" element={<ProtectedRoute><ReadingMap /></ProtectedRoute>} />
+    <Route path="/prophecy-map" element={<Navigate to="/reading-map" replace />} />
     <Route path="/install" element={<Install />} />
     <Route path="*" element={<NotFound />} />
   </Routes>

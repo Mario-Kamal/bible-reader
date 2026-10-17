@@ -11,7 +11,8 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import type { Topic, Verse } from '@/hooks/useTopics';
+import type { Topic } from '@/hooks/useTopics';
+import { getChapterPassage } from '@/lib/chapterPassage';
 
 interface ShareableTopicCardProps {
   topic: Topic;
@@ -83,6 +84,7 @@ export function ShareableTopicCard({ topic, trigger }: ShareableTopicCardProps) 
 
   // Sort all verses by order
   const sortedVerses = topic.verses?.sort((a, b) => a.order_index - b.order_index) || [];
+  const passage = getChapterPassage(sortedVerses);
 
   const generateImage = async (): Promise<Blob | null> => {
     if (!cardRef.current) return null;
@@ -157,15 +159,6 @@ export function ShareableTopicCard({ topic, trigger }: ShareableTopicCardProps) 
     }
   };
 
-  const renderVerseReference = (verse: Verse) => {
-    return (
-      <>
-        ({verse.book} {verse.chapter}: {verse.verse_start}
-        {verse.verse_end && verse.verse_end !== verse.verse_start && `-${verse.verse_end}`})
-      </>
-    );
-  };
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -180,7 +173,7 @@ export function ShareableTopicCard({ topic, trigger }: ShareableTopicCardProps) 
         <DialogHeader className="p-4 pb-0">
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
-            مشاركة الموضوع
+            مشاركة الإصحاح
           </DialogTitle>
         </DialogHeader>
         
@@ -235,7 +228,7 @@ export function ShareableTopicCard({ topic, trigger }: ShareableTopicCardProps) 
                   <BookOpen className={cn("w-5 h-5", selectedTheme.accent)} />
                 </div>
                 <div>
-                  <span className={cn("font-semibold text-xs block", selectedTheme.accent)}>موضوع اليوم</span>
+                  <span className={cn("font-semibold text-xs block", selectedTheme.accent)}>إصحاح اليوم</span>
                   <span className={cn("text-xs", selectedTheme.subtleText)}>رحلة الكتاب المقدس</span>
                 </div>
               </div>
@@ -252,19 +245,15 @@ export function ShareableTopicCard({ topic, trigger }: ShareableTopicCardProps) 
                 </p>
               )}
               
-              {/* All Verses */}
+              {/* Complete chapter */}
               {sortedVerses.length > 0 && (
-                <div className={cn("rounded-xl p-4 mb-4 space-y-4 max-h-64 overflow-y-auto", selectedTheme.accentBg)}>
-                  {sortedVerses.map((verse, index) => (
-                    <div key={verse.id} className="pb-3 last:pb-0 border-b last:border-b-0 border-white/10">
-                      <p className="text-sm leading-relaxed font-serif mb-1" style={{ fontFamily: 'serif' }}>
-                        "{verse.verse_text}"
-                      </p>
-                      <p className={cn("text-xs font-medium", selectedTheme.accent)}>
-                        — {renderVerseReference(verse)}
-                      </p>
-                    </div>
-                  ))}
+                <div className={cn("rounded-xl p-4 mb-4 max-h-64 overflow-y-auto", selectedTheme.accentBg)}>
+                  <p className={cn("text-xs font-medium mb-2", selectedTheme.accent)}>
+                    {passage.reference}
+                  </p>
+                  <p className="text-sm leading-relaxed font-serif whitespace-pre-wrap" style={{ fontFamily: 'serif' }}>
+                    {passage.text}
+                  </p>
                 </div>
               )}
               

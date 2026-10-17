@@ -39,7 +39,7 @@ export function TopicsList({ topics, onEdit, onTogglePublish, onDelete }: Topics
     <Card className="p-5 bg-card/80 backdrop-blur-sm border-border/50">
       <div className="flex items-center gap-2 mb-4">
         <BookOpen className="w-5 h-5 text-primary" />
-        <h2 className="font-semibold text-lg">المواضيع المحفوظة</h2>
+        <h2 className="font-semibold text-lg">الإصحاحات المحفوظة</h2>
         <Badge variant="secondary" className="text-xs">
           {topics.length}
         </Badge>
@@ -81,7 +81,7 @@ export function TopicsList({ topics, onEdit, onTogglePublish, onDelete }: Topics
               <div className="flex items-center gap-3 flex-wrap text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <BookOpen className="w-3.5 h-3.5" />
-                  {topic.verses?.length || 0} آية
+                  إصحاح كامل
                 </span>
                 <span>{topic.points_reward} نقطة</span>
                 {topic.scheduled_for && (
@@ -121,7 +121,7 @@ export function TopicsList({ topics, onEdit, onTogglePublish, onDelete }: Topics
                   </AlertDialogTrigger>
                   <AlertDialogContent dir="rtl">
                     <AlertDialogHeader>
-                      <AlertDialogTitle>حذف الموضوع</AlertDialogTitle>
+                      <AlertDialogTitle>حذف الإصحاح</AlertDialogTitle>
                       <AlertDialogDescription>
                         هل أنت متأكد من حذف "{topic.title}"؟ لا يمكن التراجع عن هذا الإجراء.
                       </AlertDialogDescription>
@@ -144,8 +144,8 @@ export function TopicsList({ topics, onEdit, onTogglePublish, onDelete }: Topics
         {topics.length === 0 && (
           <div className="text-center py-8">
             <BookOpen className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
-            <p className="text-muted-foreground">لا توجد مواضيع بعد</p>
-            <p className="text-xs text-muted-foreground/70 mt-1">ابدأ بإضافة موضوع جديد</p>
+            <p className="text-muted-foreground">لا توجد إصحاحات بعد</p>
+            <p className="text-xs text-muted-foreground/70 mt-1">ابدأ بإضافة إصحاح جديد</p>
           </div>
         )}
       </div>

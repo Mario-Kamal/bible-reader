@@ -45,7 +45,7 @@ export function UsersListDialog({ open, onOpenChange, users, title, description 
                 <TableHead className="text-right">الاسم</TableHead>
                 <TableHead className="text-right">الهاتف</TableHead>
                 <TableHead className="text-center">النقاط</TableHead>
-                <TableHead className="text-center">المواضيع</TableHead>
+                <TableHead className="text-center">الإصحاحات</TableHead>
                 <TableHead className="text-right">تاريخ التسجيل</TableHead>
               </TableRow>
             </TableHeader>

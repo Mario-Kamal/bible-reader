@@ -12,8 +12,8 @@ import { toast } from 'sonner';
 export function WeeklyChallengeAdmin() {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
-  const [title, setTitle] = useState('اقرأ 5 مواضيع هذا الأسبوع');
-  const [description, setDescription] = useState('أكمل قراءة 5 مواضيع واحصل على نقاط إضافية!');
+  const [title, setTitle] = useState('اقرأ 5 إصحاحات هذا الأسبوع');
+  const [description, setDescription] = useState('أكمل قراءة 5 إصحاحات واحصل على نقاط إضافية!');
   const [targetCount, setTargetCount] = useState(5);
   const [bonusPoints, setBonusPoints] = useState(20);
 
@@ -77,7 +77,7 @@ export function WeeklyChallengeAdmin() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>عدد المواضيع المطلوبة</Label>
+                <Label>عدد الإصحاحات المطلوبة</Label>
                 <Input type="number" value={targetCount} onChange={e => setTargetCount(Number(e.target.value))} min={1} />
               </div>
               <div>

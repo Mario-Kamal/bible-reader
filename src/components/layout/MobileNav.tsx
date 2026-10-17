@@ -11,10 +11,10 @@ export function MobileNav() {
 
   const navItems = [
     { href: '/home', icon: Home, label: 'الرئيسية' },
-    { href: '/topics', icon: BookOpen, label: 'المواضيع' },
+    { href: '/topics', icon: BookOpen, label: 'القراءات' },
     { href: '/bookmarks', icon: Bookmark, label: 'المفضلة' },
     { href: '/competitions', icon: Swords, label: 'المسابقة' },
-    { href: '/prophecy-map', icon: GitBranch, label: 'الخريطة' },
+    { href: '/reading-map', icon: GitBranch, label: 'خريطة القراءات' },
     { href: '/profile', icon: null, label: 'حسابي', isProfile: true },
   ];
 
@@ -70,4 +70,3 @@ export function MobileNav() {
     </nav>
   );
 }
-

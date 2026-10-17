@@ -233,7 +233,7 @@ serve(async (req) => {
 
     const payload = JSON.stringify({
       title: title || "رحلة الكتاب المقدس 📖",
-      body: body || "موضوع جديد متاح للقراءة!",
+      body: body || "إصحاح جديد متاح للقراءة!",
       icon: "/favicon.png",
       badge: "/favicon.png",
       tag: "new-topic",

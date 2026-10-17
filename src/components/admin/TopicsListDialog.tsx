@@ -66,14 +66,14 @@ export function TopicsListDialog({ open, onOpenChange, topics }: TopicsListDialo
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-primary" />
-            جميع المواضيع
+            كل الإصحاحات
             <Badge variant="secondary">{topics.length}</Badge>
           </DialogTitle>
         </DialogHeader>
         
         {topics.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            لا يوجد مواضيع
+            لا توجد إصحاحات
           </div>
         ) : (
           <>
@@ -100,7 +100,7 @@ export function TopicsListDialog({ open, onOpenChange, topics }: TopicsListDialo
                       )}
                       <div className="flex items-center gap-3 flex-wrap">
                         <span className="text-xs text-muted-foreground">
-                          {topic.verses?.length || 0} آية
+                          إصحاح كامل
                         </span>
                         <span className="text-xs text-muted-foreground">
                           {topic.points_reward} نقطة

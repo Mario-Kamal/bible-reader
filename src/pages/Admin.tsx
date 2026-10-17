@@ -154,7 +154,7 @@ export default function Admin() {
       queryClient.invalidateQueries({ queryKey: ['admin-topics'] });
       queryClient.invalidateQueries({ queryKey: ['topics'] });
       setShowManualForm(false);
-      toast.success('تم حفظ الموضوع!');
+      toast.success('تم حفظ الإصحاح!');
     },
     onError: (error) => {
       toast.error('فشل في الحفظ');
@@ -222,7 +222,7 @@ export default function Admin() {
       queryClient.invalidateQueries({ queryKey: ['admin-topics'] });
       queryClient.invalidateQueries({ queryKey: ['topics'] });
       setEditingTopic(null);
-      toast.success('تم تحديث الموضوع!');
+      toast.success('تم تحديث الإصحاح!');
     },
     onError: (error) => {
       toast.error('فشل في التحديث');
@@ -240,8 +240,8 @@ export default function Admin() {
         try {
           await supabase.functions.invoke('send-push-notification', {
             body: {
-              title: '📖 موضوع جديد!',
-              body: title || 'تم نشر موضوع جديد، اقرأه الآن!',
+              title: '📖 قراءة جديدة!',
+              body: title || 'تم نشر إصحاح جديد، اقرأه الآن!',
               topicId: id,
             }
           });
@@ -269,7 +269,7 @@ export default function Admin() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-topics'] });
       queryClient.invalidateQueries({ queryKey: ['topics'] });
-      toast.success('تم حذف الموضوع!');
+      toast.success('تم حذف الإصحاح!');
     },
     onError: (error) => {
       toast.error('فشل في الحذف');
@@ -341,7 +341,7 @@ export default function Admin() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-lg">إضافة يدوية</h3>
-                  <p className="text-sm text-muted-foreground mt-1">أضف موضوع وآيات يدوياً</p>
+                  <p className="text-sm text-muted-foreground mt-1">أضف إصحاحاً وآياته يدوياً</p>
                 </div>
               </div>
             </Card>
@@ -380,7 +380,7 @@ export default function Admin() {
         <Dialog open={showManualForm} onOpenChange={setShowManualForm}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
             <DialogHeader>
-              <DialogTitle>إضافة موضوع جديد</DialogTitle>
+              <DialogTitle>إضافة إصحاح جديد</DialogTitle>
             </DialogHeader>
             <TopicForm
               onSave={(data) => saveTopic.mutate(data)}
@@ -394,7 +394,7 @@ export default function Admin() {
         <Dialog open={!!editingTopic} onOpenChange={(open) => !open && setEditingTopic(null)}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
             <DialogHeader>
-              <DialogTitle>تعديل الموضوع</DialogTitle>
+              <DialogTitle>تعديل الإصحاح</DialogTitle>
             </DialogHeader>
             {editingTopicData && (
               <TopicForm
@@ -438,7 +438,7 @@ export default function Admin() {
           onOpenChange={setShowActiveUsersDialog}
           users={activeUsersData || []}
           title="القراء النشطين"
-          description="المستخدمين الذين قرأوا موضوعاً واحداً على الأقل"
+          description="المستخدمين الذين قرأوا إصحاحاً واحداً على الأقل"
         />
 
         {/* Topics Dialog */}

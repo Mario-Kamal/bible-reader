@@ -39,7 +39,7 @@ export function AdminStats({
     {
       icon: BookOpen,
       value: topicsCount,
-      label: 'المواضيع',
+      label: 'الإصحاحات',
       color: 'text-accent',
       bgColor: 'bg-accent/10',
       onClick: onTopicsClick,

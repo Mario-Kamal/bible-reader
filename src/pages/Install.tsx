@@ -58,7 +58,7 @@ export default function Install() {
               {
                 icon: WifiOff,
                 title: 'يعمل بدون إنترنت',
-                desc: 'اقرأ المواضيع المحفوظة في أي وقت',
+                desc: 'اقرأ الإصحاحات المحفوظة في أي وقت',
               },
               {
                 icon: Download,

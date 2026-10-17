@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sparkles, Loader2, Check, X, Eye } from 'lucide-react';
 import { toast } from 'sonner';
+import { getChapterPassage } from '@/lib/chapterPassage';
 
 interface GeneratedTopic {
   title: string;
@@ -39,7 +40,7 @@ export function AITopicGenerator({ onSave, isSaving }: AITopicGeneratorProps) {
 
   const generateTopic = async () => {
     if (!searchTopic.trim()) {
-      toast.error('اكتب موضوع للبحث');
+      toast.error('اكتب مرجع الإصحاح');
       return;
     }
     
@@ -68,7 +69,7 @@ export function AITopicGenerator({ onSave, isSaving }: AITopicGeneratorProps) {
       setGeneratedTopic(data);
       setShowPreview(true);
       setSearchTopic('');
-      toast.success('تم توليد الموضوع بنجاح!');
+      toast.success('تم إعداد الإصحاح بنجاح!');
     } catch (error) {
       console.error('Generation error:', error);
       toast.error(error instanceof Error ? error.message : 'حدث خطأ');
@@ -90,6 +91,8 @@ export function AITopicGenerator({ onSave, isSaving }: AITopicGeneratorProps) {
     setGeneratedTopic(null);
   };
 
+  const passage = generatedTopic ? getChapterPassage(generatedTopic.verses) : null;
+
   return (
     <div className="space-y-4">
       {/* Generator Card */}
@@ -100,12 +103,12 @@ export function AITopicGenerator({ onSave, isSaving }: AITopicGeneratorProps) {
           </div>
           <div>
             <h3 className="font-semibold text-lg">توليد بالذكاء الاصطناعي</h3>
-            <p className="text-sm text-muted-foreground mt-1">اكتب الموضوع والـ AI يجيب الآيات والتفسير</p>
+            <p className="text-sm text-muted-foreground mt-1">اكتب مرجع الإصحاح وسيُعدّ الذكاء الاصطناعي نصه وشرحه</p>
           </div>
           <div className="flex gap-2 w-full max-w-md">
             <Input
               ref={inputRef}
-              placeholder="مثال: معمودية يسوع، الغفران، الصلاة..."
+              placeholder="مثال: إنجيل يوحنا الإصحاح 3"
               value={searchTopic}
               onChange={(e) => setSearchTopic(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !isGenerating && generateTopic()}
@@ -125,7 +128,7 @@ export function AITopicGenerator({ onSave, isSaving }: AITopicGeneratorProps) {
             </Button>
           </div>
           {isGenerating && (
-            <p className="text-sm text-muted-foreground animate-pulse">جاري البحث في الكتاب المقدس...</p>
+            <p className="text-sm text-muted-foreground animate-pulse">جاري إعداد الإصحاح...</p>
           )}
         </div>
       </Card>
@@ -136,7 +139,7 @@ export function AITopicGenerator({ onSave, isSaving }: AITopicGeneratorProps) {
           <div className="flex items-center justify-between mb-6">
             <h3 className="font-semibold text-lg flex items-center gap-2">
               <Eye className="w-5 h-5 text-primary" />
-              معاينة الموضوع المولد
+              معاينة الإصحاح المعدّ
             </h3>
             <div className="flex gap-2">
               <Button
@@ -159,7 +162,7 @@ export function AITopicGenerator({ onSave, isSaving }: AITopicGeneratorProps) {
                 ) : (
                   <Check className="w-4 h-4 ml-1" />
                 )}
-                حفظ الموضوع
+                حفظ الإصحاح
               </Button>
             </div>
           </div>
@@ -172,27 +175,18 @@ export function AITopicGenerator({ onSave, isSaving }: AITopicGeneratorProps) {
             
             <div className="space-y-3">
               <h5 className="font-semibold flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs text-primary">
-                  {generatedTopic.verses.length}
-                </span>
-                الآيات
+                {passage?.reference}
               </h5>
-              {generatedTopic.verses.map((verse, idx) => (
-                <div key={idx} className="p-4 bg-muted/30 rounded-xl border border-border/30">
-                  <div className="text-sm font-medium text-primary mb-2">
-                    ({verse.book} {verse.chapter}: {verse.verse_start}
-                    {verse.verse_end && verse.verse_end !== verse.verse_start && `-${verse.verse_end}`})
-                  </div>
-                  <p className="scripture-text leading-relaxed">{verse.verse_text}</p>
-                </div>
-              ))}
+              <div className="p-4 bg-muted/30 rounded-xl border border-border/30">
+                <p className="scripture-text leading-relaxed whitespace-pre-wrap">{passage?.text}</p>
+              </div>
             </div>
             
             {generatedTopic.interpretation && (
               <div className="p-4 bg-gradient-to-br from-accent/10 to-primary/5 rounded-xl border border-accent/20">
                 <h5 className="font-semibold mb-3 flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-accent" />
-                  التفسير
+                  شرح الإصحاح
                 </h5>
                 <p className="text-muted-foreground leading-relaxed">{generatedTopic.interpretation}</p>
               </div>

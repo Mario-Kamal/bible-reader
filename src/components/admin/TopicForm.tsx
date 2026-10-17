@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Trash2, Mic, Upload, X, Loader2, CalendarIcon } from 'lucide-react';
+import { Mic, Upload, X, Loader2, CalendarIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -53,7 +53,27 @@ export function TopicForm({ initialData, onSave, onCancel, isSaving }: TopicForm
   const [description, setDescription] = useState(initialData?.description || '');
   const [interpretation, setInterpretation] = useState(initialData?.interpretation || '');
   const [pointsReward, setPointsReward] = useState(initialData?.points_reward || 10);
-  const [verses, setVerses] = useState<Verse[]>(initialData?.verses || []);
+  const [verses, setVerses] = useState<Verse[]>(() => {
+    const existingVerses = [...(initialData?.verses || [])].sort(
+      (a, b) => a.verse_start - b.verse_start,
+    );
+    if (existingVerses.length === 0) {
+      return [{ book: '', chapter: 1, verse_start: 1, verse_end: null, verse_text: '' }];
+    }
+
+    const firstVerse = existingVerses[0];
+    const isSingleChapter = existingVerses.every(
+      verse => verse.book === firstVerse.book && verse.chapter === firstVerse.chapter,
+    );
+    const lastVerse = existingVerses[existingVerses.length - 1];
+    return [{
+      book: firstVerse.book,
+      chapter: firstVerse.chapter,
+      verse_start: 1,
+      verse_end: isSingleChapter ? (lastVerse.verse_end ?? lastVerse.verse_start) : null,
+      verse_text: existingVerses.map(verse => verse.verse_text.trim()).filter(Boolean).join(' '),
+    }];
+  });
   const [audioUrl, setAudioUrl] = useState<string | null>(initialData?.audio_url || null);
   const [scheduledFor, setScheduledFor] = useState<Date | undefined>(
     initialData?.scheduled_for ? new Date(initialData.scheduled_for) : undefined
@@ -63,24 +83,10 @@ export function TopicForm({ initialData, onSave, onCancel, isSaving }: TopicForm
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  const addVerse = () => {
-    setVerses([...verses, {
-      book: '',
-      chapter: 1,
-      verse_start: 1,
-      verse_end: null,
-      verse_text: '',
-    }]);
-  };
-
   const updateVerse = (index: number, field: keyof Verse, value: string | number | null) => {
     const updated = [...verses];
     updated[index] = { ...updated[index], [field]: value };
     setVerses(updated);
-  };
-
-  const removeVerse = (index: number) => {
-    setVerses(verses.filter((_, i) => i !== index));
   };
 
   const startRecording = async () => {
@@ -155,11 +161,11 @@ export function TopicForm({ initialData, onSave, onCancel, isSaving }: TopicForm
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error('عنوان الموضوع مطلوب');
+      toast.error('عنوان الإصحاح مطلوب');
       return;
     }
-    if (verses.length === 0) {
-      toast.error('أضف آية واحدة على الأقل');
+    if (!verses[0]?.verse_text.trim()) {
+      toast.error('أضف نص الإصحاح كاملاً');
       return;
     }
 
@@ -180,19 +186,19 @@ export function TopicForm({ initialData, onSave, onCancel, isSaving }: TopicForm
       {/* Basic Info */}
       <div className="space-y-4">
         <div>
-          <Label>عنوان الموضوع *</Label>
+          <Label>عنوان الإصحاح *</Label>
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="مثال: معمودية يسوع المسيح"
+            placeholder="مثال: إنجيل يوحنا - الإصحاح 3"
           />
         </div>
         <div>
-          <Label>وصف الموضوع</Label>
+          <Label>وصف الإصحاح</Label>
           <Textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="وصف مختصر للموضوع..."
+            placeholder="مقدمة مختصرة للإصحاح..."
             rows={2}
           />
         </div>
@@ -241,9 +247,9 @@ export function TopicForm({ initialData, onSave, onCancel, isSaving }: TopicForm
         {/* Publish Toggle */}
         <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
           <div>
-            <Label className="text-base">نشر الموضوع</Label>
+            <Label className="text-base">نشر الإصحاح</Label>
             <p className="text-sm text-muted-foreground">
-              {isPublished ? 'الموضوع منشور وسيظهر للقراء' : 'الموضوع مسودة'}
+              {isPublished ? 'الإصحاح منشور وسيظهر للقراء' : 'الإصحاح مسودة'}
             </p>
           </div>
           <Switch
@@ -253,24 +259,11 @@ export function TopicForm({ initialData, onSave, onCancel, isSaving }: TopicForm
         </div>
       </div>
 
-      {/* Verses */}
+      {/* Chapter passage */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <Label>الآيات *</Label>
-          <Button variant="outline" size="sm" onClick={addVerse}>
-            <Plus className="w-4 h-4 ml-1" />
-            إضافة آية
-          </Button>
-        </div>
-        
+        <Label>نص الإصحاح كاملاً *</Label>
         {verses.map((verse, index) => (
           <Card key={index} className="p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">آية {index + 1}</span>
-              <Button variant="ghost" size="icon" onClick={() => removeVerse(index)}>
-                <Trash2 className="w-4 h-4 text-destructive" />
-              </Button>
-            </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs">السفر</Label>
@@ -289,49 +282,27 @@ export function TopicForm({ initialData, onSave, onCancel, isSaving }: TopicForm
                   min={1}
                 />
               </div>
-              <div>
-                <Label className="text-xs">من آية</Label>
-                <Input
-                  type="number"
-                  value={verse.verse_start}
-                  onChange={(e) => updateVerse(index, 'verse_start', parseInt(e.target.value) || 1)}
-                  min={1}
-                />
-              </div>
-              <div>
-                <Label className="text-xs">إلى آية (اختياري)</Label>
-                <Input
-                  type="number"
-                  value={verse.verse_end || ''}
-                  onChange={(e) => updateVerse(index, 'verse_end', e.target.value ? parseInt(e.target.value) : null)}
-                  min={1}
-                />
-              </div>
             </div>
             <div>
-              <Label className="text-xs">نص الآية</Label>
+              <Label className="text-xs">نص الإصحاح متصلاً دون تقسيم الآيات</Label>
               <Textarea
                 value={verse.verse_text}
                 onChange={(e) => updateVerse(index, 'verse_text', e.target.value)}
-                placeholder="اكتب نص الآية هنا..."
-                rows={2}
+                placeholder="اكتب نص الإصحاح كاملاً هنا..."
+                rows={12}
               />
             </div>
           </Card>
         ))}
-        
-        {verses.length === 0 && (
-          <p className="text-center text-muted-foreground py-4">لا توجد آيات. اضغط "إضافة آية"</p>
-        )}
       </div>
 
       {/* Interpretation */}
       <div>
-        <Label>التفسير (اختياري)</Label>
+        <Label>شرح الإصحاح (اختياري)</Label>
         <Textarea
           value={interpretation}
           onChange={(e) => setInterpretation(e.target.value)}
-          placeholder="اكتب تفسير الموضوع..."
+          placeholder="اكتب شرح الإصحاح..."
           rows={4}
         />
       </div>
@@ -403,7 +374,7 @@ export function TopicForm({ initialData, onSave, onCancel, isSaving }: TopicForm
               جاري الحفظ...
             </>
           ) : (
-            'حفظ الموضوع'
+            'حفظ الإصحاح'
           )}
         </Button>
       </div>

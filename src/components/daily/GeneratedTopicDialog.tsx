@@ -11,6 +11,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { getChapterPassage } from '@/lib/chapterPassage';
 
 interface GeneratedTopic {
   id: string;
@@ -47,6 +48,7 @@ export function GeneratedTopicDialog({
   isApproving = false,
 }: GeneratedTopicDialogProps) {
   if (!topic) return null;
+  const passage = getChapterPassage(topic.verses || []);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -54,10 +56,10 @@ export function GeneratedTopicDialog({
         <DialogHeader>
           <div className="flex items-center gap-2 text-primary">
             <Sparkles className="w-5 h-5" />
-            <DialogTitle>موضوع جديد تم توليده</DialogTitle>
+            <DialogTitle>قراءة جديدة جاهزة</DialogTitle>
           </div>
           <DialogDescription>
-            راجع الموضوع ثم وافق عليه أو عدّله
+            راجع القراءة ثم وافق على نشرها أو عدّلها
           </DialogDescription>
         </DialogHeader>
 
@@ -69,7 +71,7 @@ export function GeneratedTopicDialog({
               <div className="flex items-center gap-3 flex-wrap text-sm text-muted-foreground">
                 <Badge variant="secondary" className="gap-1">
                   <BookOpen className="w-3.5 h-3.5" />
-                  {topic.verses?.length || 0} آية
+                  إصحاح كامل
                 </Badge>
                 <span>{topic.points_reward} نقطة</span>
                 {topic.scheduled_for && (
@@ -92,22 +94,11 @@ export function GeneratedTopicDialog({
             {/* Verses Preview */}
             {topic.verses && topic.verses.length > 0 && (
               <div>
-                <h4 className="text-sm font-semibold text-muted-foreground mb-2">الآيات</h4>
-                <div className="space-y-2">
-                  {topic.verses.slice(0, 3).map((verse, idx) => (
-                    <div key={verse.id || idx} className="p-3 bg-muted/50 rounded-lg">
-                      <p className="text-sm leading-relaxed">{verse.verse_text}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        ({verse.book} {verse.chapter}: {verse.verse_start}
-                        {verse.verse_end && `-${verse.verse_end}`})
-                      </p>
-                    </div>
-                  ))}
-                  {topic.verses.length > 3 && (
-                    <p className="text-xs text-muted-foreground text-center">
-                      +{topic.verses.length - 3} آيات أخرى
-                    </p>
-                  )}
+                <h4 className="text-sm font-semibold text-muted-foreground mb-2">
+                  {passage.reference}
+                </h4>
+                <div className="p-3 bg-muted/50 rounded-lg">
+                  <p className="scripture-text text-sm leading-relaxed whitespace-pre-wrap">{passage.text}</p>
                 </div>
               </div>
             )}

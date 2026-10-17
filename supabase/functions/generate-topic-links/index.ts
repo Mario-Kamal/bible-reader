@@ -53,18 +53,18 @@ serve(async (req) => {
     }));
 
     const prompt = targetTopic
-      ? `أنت خبير في الكتاب المقدس والنبوات المسيانية. 
-لديك نبوة جديدة: "${targetTopic.title}" - ${targetTopic.description?.slice(0, 300)}
+      ? `أنت خبير في الكتاب المقدس.
+لديك قراءة جديدة: "${targetTopic.title}" - ${targetTopic.description?.slice(0, 300)}
 
-وهذه قائمة بالنبوات الموجودة:
+وهذه قائمة بالإصحاحات المقروءة:
 ${topicSummaries.filter((t: any) => t.id !== topicId).map((t: any) => `- ID: ${t.id} | ${t.title} | الأسفار: ${t.books}`).join("\n")}
 
-حدد النبوات المرتبطة بالنبوة الجديدة. لكل رابط، اذكر نوع العلاقة ووصف مختصر.`
-      : `أنت خبير في الكتاب المقدس والنبوات المسيانية.
-لديك هذه النبوات:
+حدد الإصحاحات ذات الصلة بالقراءة الجديدة اعتماداً على النصوص والأسفار. لكل رابط، اذكر نوع العلاقة ووصفاً مختصراً.`
+      : `أنت خبير في الكتاب المقدس.
+لديك هذه الإصحاحات:
 ${topicSummaries.map((t: any) => `- ID: ${t.id} | ${t.title} | الأسفار: ${t.books}`).join("\n")}
 
-حدد جميع الروابط المهمة بين هذه النبوات. لكل رابط، اذكر نوع العلاقة ووصف مختصر.`;
+حدد الروابط المهمة بين الإصحاحات اعتماداً على نصوصها وأسفارها. لكل رابط، اذكر نوع العلاقة ووصفاً مختصراً.`;
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -75,7 +75,7 @@ ${topicSummaries.map((t: any) => `- ID: ${t.id} | ${t.title} | الأسفار: $
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: "أنت خبير لاهوتي متخصص في النبوات المسيانية. أجب فقط بـ JSON." },
+          { role: "system", content: "أنت خبير في الكتاب المقدس. اربط بين الإصحاحات بناءً على نصوصها، وأجب فقط بـ JSON." },
           { role: "user", content: prompt },
         ],
         tools: [
@@ -83,7 +83,7 @@ ${topicSummaries.map((t: any) => `- ID: ${t.id} | ${t.title} | الأسفار: $
             type: "function",
             function: {
               name: "create_links",
-              description: "Create links between related prophecies",
+              description: "Create links between related Bible chapters",
               parameters: {
                 type: "object",
                 properties: {

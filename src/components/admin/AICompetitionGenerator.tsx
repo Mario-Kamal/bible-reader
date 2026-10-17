@@ -77,7 +77,7 @@ export function AICompetitionGenerator({ topics }: AICompetitionGeneratorProps) 
             size="sm"
             onClick={() => setMode('specific')}
           >
-            اختر موضوع
+            اختر إصحاحاً
           </Button>
         </div>
 

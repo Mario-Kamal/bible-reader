@@ -81,7 +81,7 @@ export default function Leaderboard() {
                             </span>}
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          {player.topics_completed} موضوع مكتمل
+                          {player.topics_completed} إصحاح مكتمل
                         </p>
                       </div>
 

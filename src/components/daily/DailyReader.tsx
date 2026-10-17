@@ -251,9 +251,9 @@ export function DailyReader({
       ) : isFutureDate ? (
         <Card className="p-6 text-center opacity-60">
           <Lock className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-          <h3 className="font-semibold text-lg mb-1">نبوة الغد</h3>
+          <h3 className="font-semibold text-lg mb-1">إصحاح الغد</h3>
           <p className="text-muted-foreground text-sm">
-            عُد غداً لقراءة موضوع جديد!
+            عُد غداً لقراءة إصحاح جديد!
           </p>
         </Card>
       ) : topicsForDate.length > 0 ? (
@@ -291,12 +291,12 @@ export function DailyReader({
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                        {topic.description || 'استكشف هذا الموضوع من منظورات متعددة'}
+                        {topic.description || 'اقرأ الإصحاح وتأمل في معانيه'}
                       </p>
                       <div className="flex items-center gap-3">
                         <PointsBadge points={topic.points_reward} size="sm" />
                         <span className="text-xs text-muted-foreground">
-                          {topic.verses?.length || 0} آية
+                          إصحاح كامل
                         </span>
                       </div>
                     </div>
@@ -312,9 +312,9 @@ export function DailyReader({
         <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
             <CalendarIcon className="w-7 h-7 text-muted-foreground" />
           </div>
-          <h3 className="font-semibold text-lg mb-2">لا توجد نبوة لهذا اليوم</h3>
+          <h3 className="font-semibold text-lg mb-2">لا يوجد إصحاح لهذا اليوم</h3>
           <p className="text-muted-foreground text-sm mb-4">
-            {isAdmin ? 'يمكنك توليد نبوة تلقائية لهذا اليوم' : 'لم يتم إضافة نبوة لهذا اليوم بعد'}
+            {isAdmin ? 'يمكنك إعداد قراءة لهذا اليوم' : 'لم تتم إضافة قراءة لهذا اليوم بعد'}
           </p>
           {isAdmin && onGenerateTopic && (
             <Button
@@ -323,7 +323,7 @@ export function DailyReader({
               className="gap-2"
             >
               <Sparkles className="w-4 h-4" />
-              {isGenerating ? 'جاري التوليد...' : 'توليد نبوة تلقائية'}
+              {isGenerating ? 'جاري الإعداد...' : 'إعداد قراءة لهذا اليوم'}
             </Button>
           )}
         </Card>
@@ -333,9 +333,9 @@ export function DailyReader({
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent dir="rtl">
           <AlertDialogHeader>
-            <AlertDialogTitle>تأكيد توليد نبوة</AlertDialogTitle>
+            <AlertDialogTitle>تأكيد إعداد قراءة</AlertDialogTitle>
             <AlertDialogDescription className="text-right">
-              هل تريد توليد موضوع جديد ليوم{' '}
+              هل تريد إعداد قراءة جديدة ليوم{' '}
               <span className="font-bold text-foreground">
                 {format(selectedDate, 'EEEE d MMMM yyyy', { locale: ar })}
               </span>
@@ -344,7 +344,7 @@ export function DailyReader({
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-row-reverse gap-2">
             <AlertDialogAction onClick={handleConfirmGenerate}>
-              نعم، توليد النبوة
+              نعم، إعداد القراءة
             </AlertDialogAction>
             <AlertDialogCancel>إلغاء</AlertDialogCancel>
           </AlertDialogFooter>
@@ -369,7 +369,7 @@ export function DailyReader({
             <Sparkles className="w-5 h-5 text-accent" />
           </div>
           <div>
-            <p className="text-sm font-medium text-foreground">نبوة اليوم</p>
+            <p className="text-sm font-medium text-foreground">إصحاح اليوم</p>
             <p className="text-xs text-muted-foreground">
               اقرأ واحصل على {topicsForDate[0].points_reward} نقطة!
             </p>
