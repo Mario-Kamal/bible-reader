@@ -70,7 +70,7 @@ export function AICompetitionGenerator({ topics }: AICompetitionGeneratorProps) 
             size="sm"
             onClick={() => setMode('today')}
           >
-            موضوع اليوم
+            إصحاح اليوم
           </Button>
           <Button
             variant={mode === 'specific' ? 'default' : 'outline'}
@@ -84,7 +84,7 @@ export function AICompetitionGenerator({ topics }: AICompetitionGeneratorProps) 
         {mode === 'specific' && (
           <Select value={selectedTopicId} onValueChange={setSelectedTopicId}>
             <SelectTrigger>
-              <SelectValue placeholder="اختر موضوع..." />
+              <SelectValue placeholder="اختر إصحاحًا..." />
             </SelectTrigger>
             <SelectContent>
               {publishedTopics.map(t => (
@@ -113,7 +113,7 @@ export function AICompetitionGenerator({ topics }: AICompetitionGeneratorProps) 
         </Button>
 
         <p className="text-xs text-muted-foreground text-center">
-          سيتم إنشاء 3 أسئلة اختيار من متعدد عن الموضوع المحدد
+          سيتم إنشاء 3 أسئلة اختيار من متعدد عن إصحاح القراءة المحدد
         </p>
       </div>
     </Card>

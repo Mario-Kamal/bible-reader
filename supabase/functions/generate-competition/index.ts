@@ -87,7 +87,7 @@ serve(async (req) => {
         .from("competitions")
         .insert({
           title: `مسابقة الأسبوع ${weekNum}`,
-          description: `مسابقة أسبوعية على نبوات الصوم الكبير - من ${weekStartStr} إلى ${weekEndStr}`,
+          description: `مسابقة أسبوعية عن القراءات الكتابية اليومية - من ${weekStartStr} إلى ${weekEndStr}`,
           start_date: weekStartStr,
           end_date: weekEndStr,
           is_active: true,
@@ -120,13 +120,15 @@ serve(async (req) => {
       .map((v: any) => `${v.book} ${v.chapter}:${v.verse_start}${v.verse_end ? `-${v.verse_end}` : ""}: ${v.verse_text}`)
       .join("\n");
 
-    const systemPrompt = `أنت معلم كتاب مقدس قبطي أرثوذكسي. مهمتك توليد أسئلة اختيار من متعدد عن نبوة مسيانية.
+    const systemPrompt = `أنت معلم كتاب مقدس قبطي أرثوذكسي. مهمتك توليد أسئلة اختيار من متعدد عن إصحاح القراءة الكتابية المحدد.
 
 القواعد:
-- 3 أسئلة عن كل نبوة
+- 3 أسئلة عن الإصحاح والآيات المقدمة فقط
 - كل سؤال له 4 خيارات (a, b, c, d)
 - إجابة واحدة صحيحة فقط
-- الأسئلة متنوعة: سؤال عن النبوة، سؤال عن التحقيق، سؤال عن المعنى الروحي
+- نوّع الأسئلة بين أحداث الإصحاح وشخصياته ومعانيه
+- لا تتناول نبوات مسيانية أو تحقيقها إلا إذا ذكرتها الآيات المقدمة صراحة
+- لا تضف معلومات غير موجودة في الإصحاح أو الآيات
 - مستوى الصعوبة متوسط
 - اللغة عربية فصحى بسيطة
 
@@ -145,14 +147,14 @@ serve(async (req) => {
   ]
 }`;
 
-    const userPrompt = `النبوة: ${topic.title}
+    const userPrompt = `إصحاح القراءة: ${topic.title}
 الوصف: ${topic.description || ""}
-التفسير: ${topic.interpretation ? topic.interpretation.substring(0, 500) : ""}
+الشرح: ${topic.interpretation ? topic.interpretation.substring(0, 500) : ""}
 
 الآيات:
 ${versesText}
 
-ولّد 3 أسئلة اختيار من متعدد عن هذه النبوة.`;
+ولّد 3 أسئلة اختيار من متعدد عن إصحاح القراءة وآياته.`;
 
     const aiResponse = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",

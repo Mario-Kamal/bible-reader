@@ -18,6 +18,7 @@ import { TestNotificationButton } from '@/components/admin/TestNotificationButto
 import { CompetitionNotificationButton } from '@/components/admin/CompetitionNotificationButton';
 import { ScheduledNotifications } from '@/components/admin/ScheduledNotifications';
 import { AICompetitionGenerator } from '@/components/admin/AICompetitionGenerator';
+import { ManualQuestionForm } from '@/components/admin/ManualQuestionForm';
 import { WeeklyChallengeAdmin } from '@/components/admin/WeeklyChallengeAdmin';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
@@ -354,8 +355,11 @@ export default function Admin() {
             </div>
           </div>
 
-          {/* AI Competition Generator */}
-          <AICompetitionGenerator topics={topics || []} />
+          {/* Competition Questions */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <AICompetitionGenerator topics={topics || []} />
+            <ManualQuestionForm topics={topics || []} />
+          </div>
 
           {/* Weekly Challenge */}
           <WeeklyChallengeAdmin />
