@@ -14,7 +14,7 @@ export function MobileNav() {
     { href: '/topics', icon: BookOpen, label: 'القراءات' },
     { href: '/bookmarks', icon: Bookmark, label: 'المفضلة' },
     { href: '/competitions', icon: Swords, label: 'المسابقة' },
-    { href: '/reading-map', icon: GitBranch, label: 'خريطة القراءات' },
+    { href: '/prophecy-map', icon: GitBranch, label: 'خريطة القراءات' },
     { href: '/profile', icon: null, label: 'حسابي', isProfile: true },
   ];
 

@@ -70,8 +70,8 @@ const AppRoutes = () => (
     <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
     <Route path="/reading-plan" element={<ProtectedRoute><ReadingPlan /></ProtectedRoute>} />
     <Route path="/competitions" element={<ProtectedRoute><Competitions /></ProtectedRoute>} />
-    <Route path="/reading-map" element={<ProtectedRoute><ReadingMap /></ProtectedRoute>} />
-    <Route path="/prophecy-map" element={<Navigate to="/reading-map" replace />} />
+    <Route path="/prophecy-map" element={<ProtectedRoute><ReadingMap /></ProtectedRoute>} />
+    <Route path="/reading-map" element={<Navigate to="/prophecy-map" replace />} />
     <Route path="/install" element={<Install />} />
     <Route path="*" element={<NotFound />} />
   </Routes>
