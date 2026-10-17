@@ -29,10 +29,16 @@ export function useCompetitionQuestions(competitionId: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('questions')
-        .select('*')
-        .eq('competition_id', competitionId!);
+        .select('*, topics(scheduled_for)')
+        .eq('competition_id', competitionId!)
+        .order('created_at', { ascending: true });
       if (error) throw error;
-      return data;
+      // Only show questions of chapters released up to today (Cairo time)
+      const todayCairo = new Date().toLocaleDateString('en-CA', { timeZone: 'Africa/Cairo' });
+      return (data || []).filter((q: any) => {
+        const s = q.topics?.scheduled_for;
+        return !s || s.slice(0, 10) <= todayCairo;
+      });
     },
   });
 }
