@@ -1,0 +1,1 @@
+SELECT cron.unschedule('generate-daily-prophecy');
