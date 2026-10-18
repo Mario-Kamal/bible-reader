@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, PenLine } from 'lucide-react';
 import { toast } from 'sonner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PastedQuestionForm } from './PastedQuestionForm';
 
 interface Topic { id: string; title: string; is_published: boolean; scheduled_for?: string | null }
 
@@ -62,8 +64,15 @@ export function ManualQuestionForm({ topics }: { topics: Topic[] }) {
     <Card className="p-5 bg-card/80 backdrop-blur-sm border-border/50">
       <div className="flex items-center gap-2 mb-4">
         <PenLine className="w-5 h-5 text-primary" />
-        <h3 className="font-semibold text-lg">إضافة سؤال يدوي</h3>
+        <h3 className="font-semibold text-lg">أسئلتك للمسابقة</h3>
       </div>
+      <Tabs defaultValue="paste" dir="rtl">
+        <TabsList className="w-full mb-4">
+          <TabsTrigger value="paste" className="flex-1">لصق أسئلة</TabsTrigger>
+          <TabsTrigger value="single" className="flex-1">سؤال واحد</TabsTrigger>
+        </TabsList>
+        <TabsContent value="paste"><PastedQuestionForm topics={topics} /></TabsContent>
+        <TabsContent value="single">
       <div className="space-y-3">
         <Select value={topicId} onValueChange={setTopicId}>
           <SelectTrigger><SelectValue placeholder="اختر الإصحاح..." /></SelectTrigger>
@@ -93,6 +102,8 @@ export function ManualQuestionForm({ topics }: { topics: Topic[] }) {
           حفظ السؤال
         </Button>
       </div>
+        </TabsContent>
+      </Tabs>
     </Card>
   );
 }
