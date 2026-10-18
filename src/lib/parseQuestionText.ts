@@ -73,7 +73,7 @@ export function parseQuestionText(text: string): { questions: ImportedQuestion[]
       group.push(current);
       questions.push(current);
     } else if (section === 'choice') {
-      const option = line.match(/^\(?([أابجدا-d])\s*[)\.\-:]\s*(.+)$/i);
+      const option = line.match(/^\(?([أابجدabcd])\s*[)\.\-:]\s*(.+)$/i);
       if (option && current) {
         const label = option[1].replace('ا', 'أ').toLowerCase();
         const index = arabicLetters.includes(label) ? arabicLetters.indexOf(label) : letters.indexOf(label as AnswerLetter);

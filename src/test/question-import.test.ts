@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
 import { parseQuestionText, questionIsValid } from '../lib/parseQuestionText';
 
 describe('pasted question import', () => {
