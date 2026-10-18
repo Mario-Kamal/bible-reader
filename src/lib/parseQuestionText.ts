@@ -1,3 +1,5 @@
+import { isCompletionQuestion } from './completionAnswer';
+
 export type AnswerLetter = 'a' | 'b' | 'c' | 'd';
 export interface ImportedQuestion {
   question_text: string;
@@ -25,6 +27,7 @@ function emptyQuestion(text: string): ImportedQuestion {
 }
 
 export function questionIsValid(q: ImportedQuestion): boolean {
+  if (isCompletionQuestion(q)) return Boolean(q.option_a.trim() && q.correct_answer === 'a' && Number.isInteger(q.points) && q.points > 0);
   const correct = q.correct_answer ? q[`option_${q.correct_answer}`] : '';
   const options = letters.map(letter => q[`option_${letter}`].trim()).filter(Boolean);
   return Boolean(q.question_text.trim() && q.option_a.trim() && q.option_b.trim() && correct.trim()
@@ -47,14 +50,8 @@ export function parseQuestionText(text: string): { questions: ImportedQuestion[]
         const answer = answers[index];
         if (!answer) return;
         if (section === 'complete') {
-          // Use other supplied answers, never invented distractors. Review remains editable.
-          const options = [answer, ...answers.filter(a => a !== answer)];
-          const distinct = [...new Set(options)].slice(0, 4);
-          const position = index % distinct.length;
-          const first = distinct.shift();
-          if (first) distinct.splice(position, 0, first);
-          letters.forEach((letter, i) => { q[`option_${letter}`] = distinct[i] || ''; });
-          q.correct_answer = letters[position];
+          q.option_a = answer;
+          q.correct_answer = 'a';
         } else {
           const letterIndex = arabicLetters.indexOf(answer.replace(/إ|ا/g, 'أ'));
           q.correct_answer = letters[letterIndex] || (letters.includes(answer as AnswerLetter) ? answer as AnswerLetter : '');
