@@ -1,0 +1,2 @@
+# Architecture rules
+- Parse pasted competition question sets in a pure client-side utility and review them before saving to the existing questions table, so imports are testable and require no AI or schema changes.
