@@ -27,10 +27,11 @@ export function useCompetitionQuestions(competitionId: string | undefined) {
     queryKey: ['competition-questions', competitionId],
     enabled: !!competitionId,
     queryFn: async () => {
+      if (!competitionId) return [];
       const { data, error } = await supabase
         .from('questions')
         .select('*, topics(scheduled_for)')
-        .eq('competition_id', competitionId!)
+        .eq('competition_id', competitionId)
         .order('created_at', { ascending: true });
       if (error) throw error;
       // Only show questions of chapters released up to today (Cairo time)
@@ -49,11 +50,12 @@ export function useMyCompetitionAnswers(competitionId: string | undefined) {
     queryKey: ['my-competition-answers', competitionId, user?.id],
     enabled: !!competitionId && !!user,
     queryFn: async () => {
+      if (!competitionId || !user) return [];
       const { data, error } = await supabase
         .from('competition_answers')
         .select('*')
-        .eq('competition_id', competitionId!)
-        .eq('user_id', user!.id);
+        .eq('competition_id', competitionId)
+        .eq('user_id', user.id);
       if (error) throw error;
       return data;
     },
@@ -65,10 +67,11 @@ export function useCompetitionLeaderboard(competitionId: string | undefined) {
     queryKey: ['competition-leaderboard', competitionId],
     enabled: !!competitionId,
     queryFn: async () => {
+      if (!competitionId) return [];
       const { data, error } = await supabase
         .from('competition_answers')
         .select('user_id, points_earned')
-        .eq('competition_id', competitionId!);
+        .eq('competition_id', competitionId);
       if (error) throw error;
 
       // Aggregate scores per user
@@ -115,9 +118,10 @@ export function useSubmitAnswer() {
       isCorrect: boolean;
       points: number;
     }) => {
+      if (!user) throw new Error('يجب تسجيل الدخول');
       const { error } = await supabase.from('competition_answers').insert({
         competition_id: competitionId,
-        user_id: user!.id,
+        user_id: user.id,
         question_id: questionId,
         selected_answer: selectedAnswer,
         is_correct: isCorrect,

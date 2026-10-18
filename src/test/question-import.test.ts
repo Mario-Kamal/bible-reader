@@ -2,11 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { parseQuestionText, questionIsValid } from '../lib/parseQuestionText';
 
 describe('pasted question import', () => {
-  it('parses completion answers into reviewable options without inventing answers', () => {
+  it('keeps completion answers as typed blanks without choices', () => {
     const result = parseQuestionText('أولاً: أسئلة أكمل العبارات الآتية\nاحسبوه كل فرح حين تقعون في .......... متنوعة\nالله يعطي الجميع ..........\n(إجابات أكمل: 1. تجارب / 2. بسخاء)');
     expect(result.questions).toHaveLength(2);
     expect(result.questions[0].option_a).toBe('تجارب');
-    expect(result.questions[1].option_b).toBe('بسخاء');
+    expect(result.questions[1].option_a).toBe('بسخاء');
+    expect(result.questions.map(q => [q.option_b, q.option_c, q.option_d])).toEqual([['', '', ''], ['', '', '']]);
     expect(result.questions.every(questionIsValid)).toBe(true);
   });
   it('maps Arabic multiple choice answer keys', () => {

@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ClipboardPaste, Loader2, Save, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { isCompletionQuestion } from '@/lib/completionAnswer';
 import { parseQuestionText, questionIsValid, type ImportedQuestion, type AnswerLetter } from '@/lib/parseQuestionText';
 
 interface Topic { id: string; title: string; scheduled_for?: string | null }
@@ -82,18 +83,23 @@ export function PastedQuestionForm({ topics }: { topics: Topic[] }) {
                 onClick={() => setQuestions(previous => previous.filter((_, i) => i !== index))}><Trash2 className="w-4 h-4" /></Button>
             </div>
             <Textarea id={`question-${index}`} value={q.question_text} disabled={saving} onChange={e => update(index, { question_text: e.target.value })} />
-            {letters.map((letter, i) => <div key={letter} className="flex items-center gap-2">
+            {isCompletionQuestion(q) ? <div className="space-y-2">
+              <Label htmlFor={`completion-${index}`}>الإجابة النموذجية</Label>
+              <Input id={`completion-${index}`} value={q.option_a} disabled={saving} onChange={e => update(index, { option_a: e.target.value })} />
+            </div> : letters.map((letter, i) => <div key={letter} className="flex items-center gap-2">
               <Label htmlFor={`option-${index}-${letter}`} className="shrink-0">{labels[i]}</Label>
               <Input id={`option-${index}-${letter}`} value={q[`option_${letter}`]} disabled={saving}
                 onChange={e => update(index, { [`option_${letter}`]: e.target.value })} />
             </div>)}
             <div className="grid grid-cols-[minmax(0,1fr)_5rem] gap-2">
               <div className="space-y-1">
+                {!isCompletionQuestion(q) && <>
                 <Label>الإجابة الصحيحة</Label>
                 <Select value={q.correct_answer} disabled={saving} onValueChange={value => update(index, { correct_answer: value as AnswerLetter })}>
                   <SelectTrigger aria-label={`الإجابة الصحيحة للسؤال ${index + 1}`}><SelectValue placeholder="اختر الإجابة" /></SelectTrigger>
                   <SelectContent>{letters.map((letter, i) => <SelectItem key={letter} value={letter} disabled={!q[`option_${letter}`].trim()}>{labels[i]}</SelectItem>)}</SelectContent>
                 </Select>
+                </>}
               </div>
               <div className="space-y-1"><Label htmlFor={`points-${index}`}>النقاط</Label><Input id={`points-${index}`} type="number" min={1} step={1} value={q.points} disabled={saving} onChange={e => update(index, { points: Number(e.target.value) })} /></div>
             </div>

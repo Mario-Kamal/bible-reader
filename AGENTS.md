@@ -1,2 +1,3 @@
 # Architecture rules
 - Parse pasted competition question sets in a pure client-side utility and review them before saving to the existing questions table, so imports are testable and require no AI or schema changes.
+- Represent completion questions with an «أكمل:» prompt, the expected answer in option_a and empty remaining options; store a/b outcome in the existing answer field to preserve compatibility with its single-character format.

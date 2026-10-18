@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { completionAnswerIsCorrect, isCompletionQuestion } from '@/lib/completionAnswer';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PointsBadge } from '@/components/ui/PointsBadge';
 import { useAuth } from '@/contexts/AuthContext';
@@ -24,38 +26,45 @@ export default function Competitions() {
   const { data: leaderboard } = useCompetitionLeaderboard(competition?.id);
   const submitAnswer = useSubmitAnswer();
 
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [resultQuestionId, setResultQuestionId] = useState<string | null>(null);
+  const [typedAnswer, setTypedAnswer] = useState('');
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
 
   const answeredIds = new Set(myAnswers?.map((a) => a.question_id) || []);
   const unanswered = questions?.filter((q) => !answeredIds.has(q.id)) || [];
-  const currentQuestion = unanswered[currentIndex];
+  const currentIndex = 0;
+  const currentQuestion = resultQuestionId ? questions?.find(q => q.id === resultQuestionId) : unanswered[0];
+  const completion = currentQuestion ? isCompletionQuestion(currentQuestion) : false;
+  const remaining = unanswered.filter(q => q.id !== resultQuestionId).length;
 
   const totalScore = myAnswers?.reduce((s, a) => s + a.points_earned, 0) || 0;
   const correctCount = myAnswers?.filter((a) => a.is_correct).length || 0;
 
   const handleAnswer = async (option: string) => {
-    if (!currentQuestion || !competition || showResult) return;
+    if (!currentQuestion || !competition || showResult || submitAnswer.isPending || (completion && !typedAnswer.trim())) return;
     setSelectedOption(option);
+    setResultQuestionId(currentQuestion.id);
     setShowResult(true);
 
-    const isCorrect = option === currentQuestion.correct_answer;
+    const isCorrect = completion ? completionAnswerIsCorrect(typedAnswer, currentQuestion.option_a) : option === currentQuestion.correct_answer;
 
     try {
       await submitAnswer.mutateAsync({
         competitionId: competition.id,
         questionId: currentQuestion.id,
-        selectedAnswer: option,
+        selectedAnswer: completion ? (isCorrect ? 'a' : 'b') : option,
         isCorrect,
         points: currentQuestion.points,
       });
       if (isCorrect) {
         toast({ title: '✅ إجابة صحيحة!', description: `+${currentQuestion.points} نقطة` });
       } else {
-        toast({ title: '❌ إجابة خاطئة', description: `الإجابة الصحيحة: ${currentQuestion.correct_answer}` });
+        toast({ title: '❌ إجابة خاطئة', description: `الإجابة الصحيحة: ${completion ? currentQuestion.option_a : currentQuestion.correct_answer}` });
       }
     } catch {
+      setShowResult(false);
+      setResultQuestionId(null);
       toast({ title: 'خطأ', description: 'حدث خطأ أثناء حفظ الإجابة', variant: 'destructive' });
     }
   };
@@ -63,7 +72,8 @@ export default function Competitions() {
   const handleNext = () => {
     setSelectedOption(null);
     setShowResult(false);
-    setCurrentIndex((i) => Math.min(i + 1, unanswered.length - 1));
+    setResultQuestionId(null);
+    setTypedAnswer('');
   };
 
   const userRank = leaderboard?.findIndex((p) => p.id === user?.id) ?? -1;
@@ -141,7 +151,13 @@ export default function Competitions() {
                       {currentQuestion.question_text}
                     </p>
 
-                    <div className="space-y-2">
+                    {completion ? <form className="space-y-3" onSubmit={event => { event.preventDefault(); void handleAnswer('a'); }}>
+                      <Input aria-label="إجابتك" placeholder="إجابتك..." value={typedAnswer} onChange={event => setTypedAnswer(event.target.value)} disabled={showResult || submitAnswer.isPending} autoComplete="off" />
+                      {!showResult && <Button type="submit" className="w-full" disabled={!typedAnswer.trim() || submitAnswer.isPending}>تأكيد الإجابة</Button>}
+                      {showResult && !submitAnswer.isPending && <p className={completionAnswerIsCorrect(typedAnswer, currentQuestion.option_a) ? 'text-success' : 'text-destructive'}>
+                        {completionAnswerIsCorrect(typedAnswer, currentQuestion.option_a) ? 'إجابة صحيحة' : `الإجابة الصحيحة: ${currentQuestion.option_a}`}
+                      </p>}
+                    </form> : <div className="space-y-2">
                       {(['a', 'b', 'c', 'd'] as const).map((opt) => {
                         const optionKey = `option_${opt}` as 'option_a' | 'option_b' | 'option_c' | 'option_d';
                         const text = currentQuestion[optionKey];
@@ -179,14 +195,14 @@ export default function Competitions() {
                           </button>
                         );
                       })}
-                    </div>
+                    </div>}
 
-                    {showResult && currentIndex < unanswered.length - 1 && (
+                    {showResult && !submitAnswer.isPending && remaining > 0 && (
                       <Button onClick={handleNext} className="w-full mt-4 animate-slide-up">
                         السؤال التالي
                       </Button>
                     )}
-                    {showResult && currentIndex === unanswered.length - 1 && (
+                    {showResult && !submitAnswer.isPending && remaining === 0 && (
                       <div className="text-center py-4 animate-bounce-in">
                         <CheckCircle2 className="w-12 h-12 mx-auto text-success mb-2" />
                         <p className="font-bold text-lg">أنهيت جميع الأسئلة! 🎉</p>
